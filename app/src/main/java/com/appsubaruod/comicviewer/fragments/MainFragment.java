@@ -1,6 +1,7 @@
 package com.appsubaruod.comicviewer.fragments;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.appsubaruod.comicviewer.R;
+import com.appsubaruod.comicviewer.databinding.FragmentMainBinding;
+import com.appsubaruod.comicviewer.viewmodel.ViewerBody;
+
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,6 +28,7 @@ public class MainFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private ViewerBody mViewerBody;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -67,10 +73,28 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(mViewerBody);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        EventBus.getDefault().unregister(mViewerBody);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        FragmentMainBinding binder = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
+
+        // create binder object and set
+        mViewerBody = new ViewerBody(null);
+        binder.setBody(mViewerBody);
+
+        return binder.getRoot();
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -83,11 +107,12 @@ public class MainFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+            //throw new RuntimeException(context.toString()
+              //      + " must implement OnFragmentInteractionListener");
         }
     }
 

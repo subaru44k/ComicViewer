@@ -1,9 +1,11 @@
-package com.appsubaruod.comicviewer.activity;
+ package com.appsubaruod.comicviewer.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -16,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.appsubaruod.comicviewer.R;
+import com.appsubaruod.comicviewer.fragments.MainFragment;
 import com.appsubaruod.comicviewer.managers.NavigationItemInteraction;
 import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
 import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
@@ -58,7 +61,18 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mNavigationItemInteraction = new NavigationItemInteraction();
+        mNavigationItemInteraction = new NavigationItemInteraction(getApplicationContext());
+
+        FragmentManager manager = getSupportFragmentManager();
+        // FragmentTransaction を開始
+        FragmentTransaction transaction = manager.beginTransaction();
+
+        // FragmentContainer のレイアウトに、MyFragment を割当てる
+        transaction.add(R.id.FragmentContainer, MainFragment.newInstance("param1", "param2"));
+
+        // 変更を確定して FragmentTransaction を終える
+        transaction.commit();
+
     }
 
     @Override
@@ -136,6 +150,7 @@ public class MainActivity extends AppCompatActivity
 
         switch (requestCode) {
             case CHOSE_FILE_CODE:
+                mNavigationItemInteraction.extractFile(data.getData());
                 break;
             default:
                 break;

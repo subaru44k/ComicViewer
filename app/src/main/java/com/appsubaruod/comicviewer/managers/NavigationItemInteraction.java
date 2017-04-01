@@ -1,10 +1,13 @@
 package com.appsubaruod.comicviewer.managers;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.MenuItem;
 
 import com.appsubaruod.comicviewer.R;
+import com.appsubaruod.comicviewer.model.ComicModel;
 import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
 import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
 import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
@@ -13,6 +16,9 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import static com.appsubaruod.comicviewer.utils.Constant.CHOSE_FILE_CODE;
 
 /**
@@ -20,7 +26,13 @@ import static com.appsubaruod.comicviewer.utils.Constant.CHOSE_FILE_CODE;
  */
 public class NavigationItemInteraction {
 
-    public NavigationItemInteraction() {
+    private ComicModel mComicModel;
+    private Context mContext;
+
+
+    public NavigationItemInteraction(Context context) {
+        mContext = context;
+        mComicModel = new ComicModel(mContext);
     }
 
     private static String LOG_TAG = NavigationItemInteraction.class.getName();
@@ -32,8 +44,8 @@ public class NavigationItemInteraction {
 
         switch (id) {
             case R.id.nav_openbook:
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("file/*");
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.setType("*/*");
                 EventBus.getDefault().post(new RequestActivityIntentEvent(intent, CHOSE_FILE_CODE));
                 break;
             case R.id.nav_gallery:
@@ -49,6 +61,10 @@ public class NavigationItemInteraction {
         }
 
         EventBus.getDefault().post(new NavigationItemCloseEvent());
+    }
+
+    public void extractFile(Uri uri) {
+        mComicModel.readComic(uri);
     }
 
     public void notifyItemSelected(MenuItem item) {
