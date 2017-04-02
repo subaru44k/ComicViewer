@@ -1,23 +1,24 @@
 package com.appsubaruod.comicviewer.model;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
-import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
+import com.appsubaruod.comicviewer.utils.messages.SetImageFileEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
@@ -28,16 +29,29 @@ import java.util.zip.ZipInputStream;
  */
 
 public class ComicModel {
+    private static ComicModel mComicModelInstance;
+    private int mPageIndex = 0;
+    private Map<Integer, File> mFileMap = new HashMap<>();
+
     private final String LOG_TAG = "ComicModel";
-    private Context mContext;
+    private final Context mContext;
+    private final File mFileDir;
     private final Executor mWorkerThread = Executors.newSingleThreadExecutor();
 
     private static final int BUFFER = 512;
     private static final int TOOBIG = 0x6400000; // maximum file size : 100MB
     private static final int TOOMANY = 10000;     // maximum file entries
 
-    public ComicModel(Context context) {
+    private ComicModel(Context context) {
         mContext = context;
+        mFileDir = mContext.getFilesDir();
+    }
+
+    public static ComicModel getInstance(Context mContext) {
+        if (mComicModelInstance == null) {
+            mComicModelInstance = new ComicModel(mContext);
+        }
+        return mComicModelInstance;
     }
 
     /**
@@ -49,7 +63,22 @@ public class ComicModel {
             @Override
             public void run() {
                 Log.d(LOG_TAG, uri.toString());
-                unpackZip(mContext.getFilesDir(), uri);
+                unpackZip(uri);
+            }
+        });
+    }
+
+    public void readNextPage() {
+        readSpecifiedPage(mPageIndex + 1);
+    }
+
+    public void readSpecifiedPage(final int pageIndex) {
+        mWorkerThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                File file = obtainFile(pageIndex);
+                EventBus.getDefault().post(new SetImageFileEvent(file));
+                mPageIndex = pageIndex;
             }
         });
     }
@@ -68,7 +97,7 @@ public class ComicModel {
         }
     }
 
-    private void unpackZip(File fileDir, Uri zipUri) {
+    private void unpackZip(Uri zipUri) {
         InputStream is;
         ZipInputStream zis = null;
         try {
@@ -84,7 +113,7 @@ public class ComicModel {
                 byte data[] = new byte[BUFFER];
                 // check if file name is valid and size is adequate
                 String name = validateFilename(entry.getName(), ".");
-                File outFile = new File(fileDir + name);
+                File outFile = new File(mFileDir + name);
                 // create parent dirs
                 outFile.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(outFile);
@@ -96,11 +125,13 @@ public class ComicModel {
                 dest.flush();
                 dest.close();
                 zis.closeEntry();
+
                 entries++;
+                storeFileList(entries, outFile);
+
                 if (entries == 1) {
-                    FileInputStream fis = new FileInputStream(outFile);
-                    Bitmap bm = BitmapFactory.decodeStream(fis);
-                    EventBus.getDefault().post(new SetImageEvent(bm));
+                    mPageIndex = 1;
+                    EventBus.getDefault().post(new SetImageFileEvent(outFile));
                 }
                 if (entries > TOOMANY) {
                     throw new IllegalStateException("Too many files to unzip.");
@@ -120,5 +151,13 @@ public class ComicModel {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void storeFileList(int entries, File outFile) {
+        mFileMap.put(entries, outFile);
+    }
+
+    private File obtainFile(int page) {
+        return mFileMap.get(page);
     }
 }

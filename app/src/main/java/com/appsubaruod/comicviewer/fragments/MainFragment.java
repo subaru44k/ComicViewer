@@ -1,8 +1,6 @@
 package com.appsubaruod.comicviewer.fragments;
 
-import android.content.Context;
 import android.databinding.DataBindingUtil;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -11,7 +9,7 @@ import android.view.ViewGroup;
 
 import com.appsubaruod.comicviewer.R;
 import com.appsubaruod.comicviewer.databinding.FragmentMainBinding;
-import com.appsubaruod.comicviewer.viewmodel.ViewerBody;
+import com.appsubaruod.comicviewer.viewmodel.ComicViewModel;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -28,13 +26,11 @@ public class MainFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private ViewerBody mViewerBody;
+    private ComicViewModel mComicViewModel;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
-    private OnFragmentInteractionListener mListener;
 
     // This constructor is called by Android FW.
     // Do not add arguments for fragment installation. Use static method insted.
@@ -75,13 +71,13 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        EventBus.getDefault().register(mViewerBody);
+        EventBus.getDefault().register(mComicViewModel);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        EventBus.getDefault().unregister(mViewerBody);
+        EventBus.getDefault().unregister(mComicViewModel);
     }
 
     @Override
@@ -91,49 +87,9 @@ public class MainFragment extends Fragment {
         FragmentMainBinding binder = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
 
         // create binder object and set
-        mViewerBody = new ViewerBody(null);
-        binder.setBody(mViewerBody);
+        mComicViewModel = new ComicViewModel();
+        binder.setBody(mComicViewModel);
 
         return binder.getRoot();
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            //throw new RuntimeException(context.toString()
-              //      + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 }

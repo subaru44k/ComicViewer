@@ -32,7 +32,7 @@ public class NavigationItemInteraction {
 
     public NavigationItemInteraction(Context context) {
         mContext = context;
-        mComicModel = new ComicModel(mContext);
+        mComicModel = ComicModel.getInstance(mContext);
     }
 
     private static String LOG_TAG = NavigationItemInteraction.class.getName();
