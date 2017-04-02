@@ -29,6 +29,7 @@ import java.util.zip.ZipInputStream;
  */
 
 public class ComicModel {
+    public static final int MAX_PAGE_WITHOUT_BLOCKING = 20;
     private static ComicModel mComicModelInstance;
     private int mPageIndex = 0;
     private Map<Integer, File> mFileMap = new HashMap<>();
@@ -73,6 +74,16 @@ public class ComicModel {
     }
 
     public void readSpecifiedPage(final int pageIndex) {
+        // If page index is small, try to load without blocking
+        // If fails to load, execute again after extraction is finished
+        if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
+            File file = obtainFile(pageIndex);
+            if (file != null) {
+                EventBus.getDefault().post(new SetImageFileEvent(file));
+                mPageIndex = pageIndex;
+                return;
+            }
+        }
         mWorkerThread.execute(new Runnable() {
             @Override
             public void run() {
