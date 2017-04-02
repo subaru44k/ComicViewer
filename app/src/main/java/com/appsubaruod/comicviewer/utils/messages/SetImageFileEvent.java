@@ -9,7 +9,7 @@ import java.io.File;
  */
 
 public class SetImageFileEvent {
-    File mImageFile;
+    private File mImageFile;
 
     public SetImageFileEvent(File imageFile) {
         mImageFile = imageFile;
@@ -18,4 +18,5 @@ public class SetImageFileEvent {
     public File getImageFile() {
         return mImageFile;
     }
+
 }

@@ -15,9 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -27,11 +25,11 @@ import java.util.zip.ZipInputStream;
 /**
  * Created by s-yamada on 2017/03/28.
  */
-
 public class ComicModel {
     public static final int MAX_PAGE_WITHOUT_BLOCKING = 20;
     private static ComicModel mComicModelInstance;
     private int mPageIndex = 0;
+    private int mMaxPageIndex = 0;
     private Map<Integer, File> mFileMap = new HashMap<>();
 
     private final String LOG_TAG = "ComicModel";
@@ -76,8 +74,8 @@ public class ComicModel {
     public void readSpecifiedPage(final int pageIndex) {
         // If page index is small, try to load without blocking
         // If fails to load, execute again after extraction is finished
+        final File file = obtainFile(pageIndex);
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
-            File file = obtainFile(pageIndex);
             if (file != null) {
                 EventBus.getDefault().post(new SetImageFileEvent(file));
                 mPageIndex = pageIndex;
@@ -87,7 +85,6 @@ public class ComicModel {
         mWorkerThread.execute(new Runnable() {
             @Override
             public void run() {
-                File file = obtainFile(pageIndex);
                 EventBus.getDefault().post(new SetImageFileEvent(file));
                 mPageIndex = pageIndex;
             }
@@ -109,6 +106,9 @@ public class ComicModel {
     }
 
     private void unpackZip(Uri zipUri) {
+
+        initialize();
+
         InputStream is;
         ZipInputStream zis = null;
         try {
@@ -139,10 +139,11 @@ public class ComicModel {
 
                 entries++;
                 storeFileList(entries, outFile);
+                setMaxPageIndex(entries);
 
                 if (entries == 1) {
                     mPageIndex = 1;
-                    EventBus.getDefault().post(new SetImageFileEvent(outFile));
+                    EventBus.getDefault().post(new SetImageFileEvent(obtainFile(mPageIndex)));
                 }
                 if (entries > TOOMANY) {
                     throw new IllegalStateException("Too many files to unzip.");
@@ -162,6 +163,16 @@ public class ComicModel {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void initialize() {
+        mFileMap = new HashMap<>();
+        mPageIndex = 0;
+        mMaxPageIndex = 0;
+    }
+
+    private void setMaxPageIndex(int index) {
+        mMaxPageIndex = index;
     }
 
     private void storeFileList(int entries, File outFile) {
