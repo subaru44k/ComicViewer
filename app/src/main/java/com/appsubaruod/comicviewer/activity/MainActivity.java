@@ -18,11 +18,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.appsubaruod.comicviewer.R;
-import com.appsubaruod.comicviewer.fragments.MainFragment;
+import com.appsubaruod.comicviewer.fragments.ComicViewFragment;
+import com.appsubaruod.comicviewer.fragments.SelectPageFragment;
 import com.appsubaruod.comicviewer.managers.NavigationItemInteraction;
 import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
 import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
 import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
+import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction transaction = manager.beginTransaction();
 
         // FragmentContainer のレイアウトに、MyFragment を割当てる
-        transaction.add(R.id.FragmentContainer, MainFragment.newInstance("param1", "param2"));
+        transaction.add(R.id.FragmentContainer, ComicViewFragment.newInstance("param1", "param2"));
 
         // 変更を確定して FragmentTransaction を終える
         transaction.commit();
@@ -141,6 +143,18 @@ public class MainActivity extends AppCompatActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void dispatchIntentForResult(RequestActivityIntentEvent event) {
         startActivityForResult(event.getIntent(), event.getCode());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void showSelectPageFragment(SelectPageEvent event) {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+
+        // change fragment and add to back stack
+        transaction.replace(R.id.FragmentContainer, SelectPageFragment.newInstance("param1", "param2"));
+        transaction.addToBackStack(null);
+
+        transaction.commit();
     }
 
     @Override

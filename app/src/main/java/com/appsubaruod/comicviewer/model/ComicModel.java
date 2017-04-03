@@ -4,7 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
-import com.appsubaruod.comicviewer.utils.messages.SetImageFileEvent;
+import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -77,7 +77,7 @@ public class ComicModel {
         final File file = obtainFile(pageIndex);
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
             if (file != null) {
-                EventBus.getDefault().post(new SetImageFileEvent(file));
+                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
                 return;
             }
@@ -85,7 +85,7 @@ public class ComicModel {
         mWorkerThread.execute(new Runnable() {
             @Override
             public void run() {
-                EventBus.getDefault().post(new SetImageFileEvent(file));
+                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
             }
         });
@@ -143,7 +143,7 @@ public class ComicModel {
 
                 if (entries == 1) {
                     mPageIndex = 1;
-                    EventBus.getDefault().post(new SetImageFileEvent(obtainFile(mPageIndex)));
+                    EventBus.getDefault().post(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
                 }
                 if (entries > TOOMANY) {
                     throw new IllegalStateException("Too many files to unzip.");
@@ -169,6 +169,18 @@ public class ComicModel {
         mFileMap = new HashMap<>();
         mPageIndex = 0;
         mMaxPageIndex = 0;
+    }
+
+    /**
+     * Get the index that currently showing
+     * @return
+     */
+    public int getPageIndex() {
+        return mPageIndex;
+    }
+
+    public int getMaxPageIndex() {
+        return mMaxPageIndex;
     }
 
     private void setMaxPageIndex(int index) {

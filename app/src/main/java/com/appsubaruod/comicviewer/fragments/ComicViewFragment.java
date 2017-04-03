@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.appsubaruod.comicviewer.R;
-import com.appsubaruod.comicviewer.databinding.FragmentMainBinding;
+import com.appsubaruod.comicviewer.databinding.FragmentViewComicBinding;
 import com.appsubaruod.comicviewer.viewmodel.ComicViewModel;
 
 import org.greenrobot.eventbus.EventBus;
@@ -16,12 +16,12 @@ import org.greenrobot.eventbus.EventBus;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MainFragment.OnFragmentInteractionListener} interface
+ * {@link ComicViewFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link MainFragment#newInstance} factory method to
+ * Use the {@link ComicViewFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment {
+public class ComicViewFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -35,7 +35,7 @@ public class MainFragment extends Fragment {
     // This constructor is called by Android FW.
     // Do not add arguments for fragment installation. Use static method insted.
     // http://mixi-inc.github.io/AndroidTraining/fundamentals/2.02.activity-and-fragment.html
-    public MainFragment() {
+    public ComicViewFragment() {
         // Required empty public constructor
     }
 
@@ -47,11 +47,11 @@ public class MainFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment MainFragment.
+     * @return A new instance of fragment ComicViewFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MainFragment newInstance(String param1, String param2) {
-        MainFragment fragment = new MainFragment();
+    public static ComicViewFragment newInstance(String param1, String param2) {
+        ComicViewFragment fragment = new ComicViewFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -84,7 +84,7 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        FragmentMainBinding binder = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
+        FragmentViewComicBinding binder = DataBindingUtil.inflate(inflater, R.layout.fragment_view_comic, container, false);
 
         // create binder object and set
         mComicViewModel = new ComicViewModel();

@@ -11,13 +11,11 @@ import com.appsubaruod.comicviewer.model.ComicModel;
 import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
 import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
 import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
+import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import static com.appsubaruod.comicviewer.utils.Constant.CHOSE_FILE_CODE;
 
@@ -49,6 +47,7 @@ public class NavigationItemInteraction {
                 EventBus.getDefault().post(new RequestActivityIntentEvent(intent, CHOSE_FILE_CODE));
                 break;
             case R.id.nav_gallery:
+                EventBus.getDefault().post(new SelectPageEvent(mComicModel.getPageIndex(), mComicModel.getMaxPageIndex()));
                 break;
             case R.id.nav_slideshow:
                 break;

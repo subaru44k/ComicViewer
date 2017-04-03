@@ -8,7 +8,7 @@ import android.widget.ImageView;
 
 import com.appsubaruod.comicviewer.BR;
 import com.appsubaruod.comicviewer.model.ComicModel;
-import com.appsubaruod.comicviewer.utils.messages.SetImageFileEvent;
+import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -32,7 +32,7 @@ public class ComicViewModel extends BaseObservable {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void setMainImageFile(SetImageFileEvent event) {
+    public void setMainImageFile(SetImageEvent event) {
         mMainImageFile = event.getImageFile();
         notifyPropertyChanged(BR.mainImageFile);
     }
