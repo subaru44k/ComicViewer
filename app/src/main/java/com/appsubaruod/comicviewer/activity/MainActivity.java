@@ -21,6 +21,7 @@
  import com.appsubaruod.comicviewer.utils.messages.BackKeyEvent;
  import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
  import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
+ import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
  import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
  import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
 
@@ -132,6 +133,19 @@ public class MainActivity extends AppCompatActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void dispatchIntentForResult(RequestActivityIntentEvent event) {
         startActivityForResult(event.getIntent(), event.getCode());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void showReadComicFragment(ReadComicEvent event) {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+
+        // change fragment and add ComicViewFragment
+        manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        transaction.replace(R.id.FragmentContainer, ComicViewFragment.newInstance());
+
+        transaction.commit();
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

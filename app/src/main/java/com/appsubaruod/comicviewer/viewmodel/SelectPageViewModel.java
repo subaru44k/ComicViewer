@@ -86,6 +86,7 @@ public class SelectPageViewModel extends BaseObservable {
     }
 
     public void onProgressChanged(SeekBar seekBar, int progressValue, boolean fromUser) {
+        Log.d(LOG_TAG, "onProgressChanged");
         if (fromUser) {
             mComicModel.requestSpecifiedPage(progressValue);
         } else {
