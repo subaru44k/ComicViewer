@@ -10,6 +10,7 @@ import android.widget.SeekBar;
 import com.appsubaruod.comicviewer.BR;
 import com.appsubaruod.comicviewer.model.ComicModel;
 import com.appsubaruod.comicviewer.utils.messages.BackKeyEvent;
+import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 import com.squareup.picasso.Picasso;
 
@@ -66,6 +67,11 @@ public class SelectPageViewModel extends BaseObservable {
         mCurrentPageFile = event.getImageFile();
         notifyPropertyChanged(BR.currentPageIndex);
         notifyPropertyChanged(BR.currentPageFile);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onLoadComplete(LoadCompleteEvent event) {
+        setMaxPageIndex(event.getMaxPage());
     }
 
     public void select(View view) {

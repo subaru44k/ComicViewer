@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -188,6 +189,8 @@ public class ComicModel {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            // Send notification including maxpage info
+            EventBus.getDefault().post(new LoadCompleteEvent(mMaxPageIndex));
         }
     }
 
