@@ -8,11 +8,17 @@ import java.io.File;
  * Created by s-yamada on 2017/04/01.
  */
 
-public class SetImageFileEvent {
+public class SetImageEvent {
+    private int mImageIndex;
     private File mImageFile;
 
-    public SetImageFileEvent(File imageFile) {
+    public SetImageEvent(int imageIndex, File imageFile) {
+        mImageIndex = imageIndex;
         mImageFile = imageFile;
+    }
+
+    public int getImageIndex() {
+        return mImageIndex;
     }
 
     public File getImageFile() {
