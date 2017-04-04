@@ -170,7 +170,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(LOG_TAG, "onActivityResult");
+
+        if (resultCode != RESULT_OK) {
+            // cancelled or something
+            return;
+        }
 
         switch (requestCode) {
             case CHOSE_FILE_CODE:

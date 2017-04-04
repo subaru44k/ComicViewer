@@ -26,7 +26,7 @@ public class ComicViewModel extends BaseObservable {
     private ComicModel mComicModel;
 
     public ComicViewModel() {
-        mComicModel = ComicModel.getInstanceIfCreated()
+        mComicModel = ComicModel.getInstanceIfCreated();
         mComicModel.requestSpecifiedPage(mComicModel.getPageIndex());
     }
 
