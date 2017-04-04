@@ -4,7 +4,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
-import com.appsubaruod.comicviewer.utils.messages.SetImageFileEvent;
+import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
+import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -53,6 +54,10 @@ public class ComicModel {
         return mComicModelInstance;
     }
 
+    public static ComicModel getInstanceIfCreated() {
+        return mComicModelInstance;
+    }
+
     /**
      * Reads comic and extract appropriately.
      * @param uri
@@ -71,13 +76,18 @@ public class ComicModel {
         readSpecifiedPage(mPageIndex + 1);
     }
 
+    /**
+     * Requests to send file and set page index in the model
+     * @param pageIndex Request page index
+     */
     public void readSpecifiedPage(final int pageIndex) {
         // If page index is small, try to load without blocking
         // If fails to load, execute again after extraction is finished
         final File file = obtainFile(pageIndex);
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
             if (file != null) {
-                EventBus.getDefault().post(new SetImageFileEvent(file));
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
                 return;
             }
@@ -85,8 +95,33 @@ public class ComicModel {
         mWorkerThread.execute(new Runnable() {
             @Override
             public void run() {
-                EventBus.getDefault().post(new SetImageFileEvent(file));
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
+            }
+        });
+    }
+
+    /**
+     * Reqests to send file without setting page index
+     * @param pageIndex Request page index
+     */
+    public void requestSpecifiedPage(final int pageIndex) {
+        // If page index is small, try to load without blocking
+        // If fails to load, execute again after extraction is finished
+        final File file = obtainFile(pageIndex);
+        if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
+            if (file != null) {
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
+                return;
+            }
+        }
+        mWorkerThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
             }
         });
     }
@@ -143,7 +178,8 @@ public class ComicModel {
 
                 if (entries == 1) {
                     mPageIndex = 1;
-                    EventBus.getDefault().post(new SetImageFileEvent(obtainFile(mPageIndex)));
+                    // call postSticky, so as not to drop sending event during fragment translation
+                    EventBus.getDefault().postSticky(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
                 }
                 if (entries > TOOMANY) {
                     throw new IllegalStateException("Too many files to unzip.");
@@ -162,6 +198,8 @@ public class ComicModel {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            // Send notification including maxpage info
+            EventBus.getDefault().post(new LoadCompleteEvent(mMaxPageIndex));
         }
     }
 
@@ -169,6 +207,18 @@ public class ComicModel {
         mFileMap = new HashMap<>();
         mPageIndex = 0;
         mMaxPageIndex = 0;
+    }
+
+    /**
+     * Get the index that currently showing
+     * @return
+     */
+    public int getPageIndex() {
+        return mPageIndex;
+    }
+
+    public int getMaxPageIndex() {
+        return mMaxPageIndex;
     }
 
     private void setMaxPageIndex(int index) {

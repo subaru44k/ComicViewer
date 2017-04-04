@@ -3,12 +3,13 @@ package com.appsubaruod.comicviewer.viewmodel;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.appsubaruod.comicviewer.BR;
 import com.appsubaruod.comicviewer.model.ComicModel;
-import com.appsubaruod.comicviewer.utils.messages.SetImageFileEvent;
+import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -22,8 +23,11 @@ import java.io.File;
 public class ComicViewModel extends BaseObservable {
     private static final String LOG_TAG = ComicViewModel.class.getName();
     private File mMainImageFile;
+    private ComicModel mComicModel;
 
     public ComicViewModel() {
+        mComicModel = ComicModel.getInstanceIfCreated();
+        mComicModel.requestSpecifiedPage(mComicModel.getPageIndex());
     }
 
     @Bindable
@@ -31,18 +35,23 @@ public class ComicViewModel extends BaseObservable {
         return mMainImageFile;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void setMainImageFile(SetImageFileEvent event) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void setMainImageFile(SetImageEvent event) {
         mMainImageFile = event.getImageFile();
         notifyPropertyChanged(BR.mainImageFile);
     }
 
     public void onClick(View view) {
-        ComicModel.getInstance(null).readNextPage();
+        mComicModel.readNextPage();
     }
 
     @BindingAdapter("loadImageFile")
     public static void setImageBitmap(ImageView view, File imageFile) {
+        if (imageFile != null) {
+            Log.d(LOG_TAG, "setImageBitmap : " + imageFile.getPath());
+        } else {
+            Log.d(LOG_TAG, "setImageBitmap : null");
+        }
         Picasso.with(view.getContext()).load(imageFile).fit().into(view);
     }
 }
