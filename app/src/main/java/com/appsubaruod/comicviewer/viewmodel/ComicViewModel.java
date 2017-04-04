@@ -50,7 +50,7 @@ public class ComicViewModel extends BaseObservable {
         if (imageFile != null) {
             Log.d(LOG_TAG, "setImageBitmap : " + imageFile.getPath());
         } else {
-            Log.d(LOG_TAG, "setImageBitmap : null");
+            Log.w(LOG_TAG, "setImageBitmap : null");
         }
         Picasso.with(view.getContext()).load(imageFile).fit().into(view);
     }
