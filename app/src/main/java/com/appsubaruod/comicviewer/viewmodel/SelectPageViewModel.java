@@ -3,6 +3,7 @@ package com.appsubaruod.comicviewer.viewmodel;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -25,6 +26,7 @@ import java.io.File;
  */
 
 public class SelectPageViewModel extends BaseObservable {
+    private static final String LOG_TAG = SelectPageViewModel.class.getName();
     private ComicModel mComicModel;
     private int mCurrentPageIndex;
     private int mMaxPageIndex;
@@ -61,7 +63,7 @@ public class SelectPageViewModel extends BaseObservable {
         return mCurrentPageFile;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void setCurrentPageFile(SetImageEvent event) {
         mCurrentPageIndex = event.getImageIndex();
         mCurrentPageFile = event.getImageFile();
@@ -83,12 +85,23 @@ public class SelectPageViewModel extends BaseObservable {
         EventBus.getDefault().post(new BackKeyEvent());
     }
 
-    public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
-        mComicModel.requestSpecifiedPage(progresValue);
+    public void onProgressChanged(SeekBar seekBar, int progressValue, boolean fromUser) {
+        if (fromUser) {
+            mComicModel.requestSpecifiedPage(progressValue);
+        } else {
+            // onProgressChanged may called from system when SeekBar is loaded or max value is changed.
+            // In this case ignore.
+            Log.d(LOG_TAG, "SeekBar.onProgressChanged is called from system, ignore.");
+        }
     }
 
-    @BindingAdapter("loadImageFile")
+    @BindingAdapter("loadSelectedImageFile")
     public static void setImageBitmap(ImageView view, File imageFile) {
+        if (imageFile != null) {
+            Log.d(LOG_TAG, "setImageBitmap : " + imageFile.getPath());
+        } else {
+            Log.d(LOG_TAG, "setImageBitmap : null");
+        }
         Picasso.with(view.getContext()).load(imageFile).fit().into(view);
     }
 }

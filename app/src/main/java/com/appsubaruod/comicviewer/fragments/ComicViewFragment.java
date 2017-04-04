@@ -3,6 +3,7 @@ package com.appsubaruod.comicviewer.fragments;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import org.greenrobot.eventbus.EventBus;
  * create an instance of this fragment.
  */
 public class ComicViewFragment extends Fragment {
+    private static final String LOG_TAG = ComicViewFragment.class.getName();
     private ComicViewModel mComicViewModel;
 
     // This constructor is called by Android FW.
@@ -49,12 +51,14 @@ public class ComicViewFragment extends Fragment {
 
     @Override
     public void onResume() {
+        Log.d(LOG_TAG, "onResume");
         super.onResume();
         EventBus.getDefault().register(mComicViewModel);
     }
 
     @Override
     public void onPause() {
+        Log.d(LOG_TAG, "onPause");
         super.onPause();
         EventBus.getDefault().unregister(mComicViewModel);
     }

@@ -3,6 +3,7 @@ package com.appsubaruod.comicviewer.fragments;
 import android.support.v4.app.Fragment;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import org.greenrobot.eventbus.EventBus;
  */
 
 public class SelectPageFragment extends Fragment {
+    private static final String LOG_TAG = SelectPageFragment.class.getName();
     private SelectPageViewModel mSelectPageModel;
 
     // This constructor is called by Android FW.
@@ -48,12 +50,14 @@ public class SelectPageFragment extends Fragment {
 
     @Override
     public void onResume() {
+        Log.d(LOG_TAG, "onResume");
         super.onResume();
         EventBus.getDefault().register(mSelectPageModel);
     }
 
     @Override
     public void onPause() {
+        Log.d(LOG_TAG, "onPause");
         super.onPause();
         EventBus.getDefault().unregister(mSelectPageModel);
     }

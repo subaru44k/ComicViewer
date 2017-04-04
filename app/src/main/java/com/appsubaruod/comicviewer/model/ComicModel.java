@@ -82,7 +82,8 @@ public class ComicModel {
         final File file = obtainFile(pageIndex);
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
             if (file != null) {
-                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
                 return;
             }
@@ -90,7 +91,8 @@ public class ComicModel {
         mWorkerThread.execute(new Runnable() {
             @Override
             public void run() {
-                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
             }
         });
@@ -106,14 +108,16 @@ public class ComicModel {
         final File file = obtainFile(pageIndex);
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
             if (file != null) {
-                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 return;
             }
         }
         mWorkerThread.execute(new Runnable() {
             @Override
             public void run() {
-                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
+                // call postSticky, so as not to drop sending event during fragment translation
+                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
             }
         });
     }
@@ -170,7 +174,8 @@ public class ComicModel {
 
                 if (entries == 1) {
                     mPageIndex = 1;
-                    EventBus.getDefault().post(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
+                    // call postSticky, so as not to drop sending event during fragment translation
+                    EventBus.getDefault().postSticky(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
                 }
                 if (entries > TOOMANY) {
                     throw new IllegalStateException("Too many files to unzip.");

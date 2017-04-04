@@ -3,6 +3,7 @@ package com.appsubaruod.comicviewer.viewmodel;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -31,7 +32,7 @@ public class ComicViewModel extends BaseObservable {
         return mMainImageFile;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void setMainImageFile(SetImageEvent event) {
         mMainImageFile = event.getImageFile();
         notifyPropertyChanged(BR.mainImageFile);
@@ -43,6 +44,11 @@ public class ComicViewModel extends BaseObservable {
 
     @BindingAdapter("loadImageFile")
     public static void setImageBitmap(ImageView view, File imageFile) {
+        if (imageFile != null) {
+            Log.d(LOG_TAG, "setImageBitmap : " + imageFile.getPath());
+        } else {
+            Log.d(LOG_TAG, "setImageBitmap : null");
+        }
         Picasso.with(view.getContext()).load(imageFile).fit().into(view);
     }
 }
