@@ -71,6 +71,10 @@ public class ComicModel {
         readSpecifiedPage(mPageIndex + 1);
     }
 
+    /**
+     * Requests to send file and set page index in the model
+     * @param pageIndex Request page index
+     */
     public void readSpecifiedPage(final int pageIndex) {
         // If page index is small, try to load without blocking
         // If fails to load, execute again after extraction is finished
@@ -87,6 +91,28 @@ public class ComicModel {
             public void run() {
                 EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
+            }
+        });
+    }
+
+    /**
+     * Reqests to send file without setting page index
+     * @param pageIndex Request page index
+     */
+    public void requestSpecifiedPage(final int pageIndex) {
+        // If page index is small, try to load without blocking
+        // If fails to load, execute again after extraction is finished
+        final File file = obtainFile(pageIndex);
+        if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
+            if (file != null) {
+                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
+                return;
+            }
+        }
+        mWorkerThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                EventBus.getDefault().post(new SetImageEvent(pageIndex, file));
             }
         });
     }

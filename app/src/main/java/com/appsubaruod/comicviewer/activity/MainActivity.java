@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,6 +22,7 @@ import com.appsubaruod.comicviewer.R;
 import com.appsubaruod.comicviewer.fragments.ComicViewFragment;
 import com.appsubaruod.comicviewer.fragments.SelectPageFragment;
 import com.appsubaruod.comicviewer.managers.NavigationItemInteraction;
+import com.appsubaruod.comicviewer.utils.messages.BackKeyEvent;
 import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
 import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
 import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
@@ -155,6 +157,12 @@ public class MainActivity extends AppCompatActivity
         transaction.addToBackStack(null);
 
         transaction.commit();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void handleBackKeyEvent(BackKeyEvent event) {
+        FragmentManager manager = getSupportFragmentManager();
+        manager.popBackStack();
     }
 
     @Override
