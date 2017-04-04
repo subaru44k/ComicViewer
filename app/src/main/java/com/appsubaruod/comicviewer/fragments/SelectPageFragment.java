@@ -20,15 +20,6 @@ import org.greenrobot.eventbus.EventBus;
 public class SelectPageFragment extends Fragment {
     private SelectPageViewModel mSelectPageModel;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "currentPage";
-    private static final String ARG_PARAM2 = "maxPage";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     // This constructor is called by Android FW.
     // Do not add arguments for fragment installation. Use static method insted.
     // http://mixi-inc.github.io/AndroidTraining/fundamentals/2.02.activity-and-fragment.html
@@ -42,27 +33,17 @@ public class SelectPageFragment extends Fragment {
      * Use this method instead of expanded constructor.
      * http://mixi-inc.github.io/AndroidTraining/fundamentals/2.02.activity-and-fragment.html
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment ComicViewFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static SelectPageFragment newInstance(String currentPage, String maxPage) {
+    public static SelectPageFragment newInstance() {
         SelectPageFragment fragment = new SelectPageFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, currentPage);
-        args.putString(ARG_PARAM2, maxPage);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
