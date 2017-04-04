@@ -33,7 +33,7 @@ public class SelectPageViewModel extends BaseObservable {
     private File mCurrentPageFile;
 
     public SelectPageViewModel() {
-        mComicModel = ComicModel.getInstance(null);
+        mComicModel = ComicModel.getInstanceIfCreated();
         setMaxPageIndex(mComicModel.getMaxPageIndex());
         mComicModel.requestSpecifiedPage(mComicModel.getPageIndex());
     }
@@ -63,7 +63,7 @@ public class SelectPageViewModel extends BaseObservable {
         return mCurrentPageFile;
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void setCurrentPageFile(SetImageEvent event) {
         mCurrentPageIndex = event.getImageIndex();
         mCurrentPageFile = event.getImageFile();
@@ -71,7 +71,7 @@ public class SelectPageViewModel extends BaseObservable {
         notifyPropertyChanged(BR.currentPageFile);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onLoadComplete(LoadCompleteEvent event) {
         setMaxPageIndex(event.getMaxPage());
     }

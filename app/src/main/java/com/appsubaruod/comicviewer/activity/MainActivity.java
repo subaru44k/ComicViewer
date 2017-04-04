@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity
 
         transaction.commit();
 
+        Log.d(LOG_TAG, "backstack count : " + manager.getBackStackEntryCount());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

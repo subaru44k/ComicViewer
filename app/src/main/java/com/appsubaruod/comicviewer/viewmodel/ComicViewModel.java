@@ -23,8 +23,11 @@ import java.io.File;
 public class ComicViewModel extends BaseObservable {
     private static final String LOG_TAG = ComicViewModel.class.getName();
     private File mMainImageFile;
+    private ComicModel mComicModel;
 
     public ComicViewModel() {
+        mComicModel = ComicModel.getInstanceIfCreated()
+        mComicModel.requestSpecifiedPage(mComicModel.getPageIndex());
     }
 
     @Bindable
@@ -32,14 +35,14 @@ public class ComicViewModel extends BaseObservable {
         return mMainImageFile;
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void setMainImageFile(SetImageEvent event) {
         mMainImageFile = event.getImageFile();
         notifyPropertyChanged(BR.mainImageFile);
     }
 
     public void onClick(View view) {
-        ComicModel.getInstance(null).readNextPage();
+        mComicModel.readNextPage();
     }
 
     @BindingAdapter("loadImageFile")
