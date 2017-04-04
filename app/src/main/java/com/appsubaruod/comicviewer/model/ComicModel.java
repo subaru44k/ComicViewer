@@ -87,7 +87,6 @@ public class ComicModel {
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
             if (file != null) {
                 // call postSticky, so as not to drop sending event during fragment translation
-                Log.d(LOG_TAG, "send 1");
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
                 return;
@@ -97,7 +96,6 @@ public class ComicModel {
             @Override
             public void run() {
                 // call postSticky, so as not to drop sending event during fragment translation
-                Log.d(LOG_TAG, "send 2");
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 mPageIndex = pageIndex;
             }
@@ -115,7 +113,6 @@ public class ComicModel {
         if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
             if (file != null) {
                 // call postSticky, so as not to drop sending event during fragment translation
-                Log.d(LOG_TAG, "send 3");
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 return;
             }
@@ -124,7 +121,6 @@ public class ComicModel {
             @Override
             public void run() {
                 // call postSticky, so as not to drop sending event during fragment translation
-                Log.d(LOG_TAG, "send 4");
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
             }
         });
