@@ -10,10 +10,10 @@ import android.widget.SeekBar;
 
 import com.appsubaruod.comicviewer.BR;
 import com.appsubaruod.comicviewer.model.ComicModel;
+import com.appsubaruod.comicviewer.utils.ImageOperator;
 import com.appsubaruod.comicviewer.utils.messages.BackKeyEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
-import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -31,6 +31,8 @@ public class SelectPageViewModel extends BaseObservable {
     private int mCurrentPageIndex;
     private int mMaxPageIndex;
     private File mCurrentPageFile;
+
+    private static ImageOperator mImageOperator = new ImageOperator();
 
     public SelectPageViewModel() {
         mComicModel = ComicModel.getInstanceIfCreated();
@@ -103,6 +105,7 @@ public class SelectPageViewModel extends BaseObservable {
         } else {
             Log.w(LOG_TAG, "setImageBitmap : null");
         }
-        Picasso.with(view.getContext()).load(imageFile).fit().into(view);
+
+        mImageOperator.setFileToImageView(view, imageFile);
     }
 }

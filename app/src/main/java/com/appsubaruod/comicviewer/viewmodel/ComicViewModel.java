@@ -9,8 +9,8 @@ import android.widget.ImageView;
 
 import com.appsubaruod.comicviewer.BR;
 import com.appsubaruod.comicviewer.model.ComicModel;
+import com.appsubaruod.comicviewer.utils.ImageOperator;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
-import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -24,6 +24,8 @@ public class ComicViewModel extends BaseObservable {
     private static final String LOG_TAG = ComicViewModel.class.getName();
     private File mMainImageFile;
     private ComicModel mComicModel;
+
+    private static ImageOperator mImageOperator = new ImageOperator();
 
     public ComicViewModel() {
         mComicModel = ComicModel.getInstanceIfCreated();
@@ -52,12 +54,13 @@ public class ComicViewModel extends BaseObservable {
     }
 
     @BindingAdapter("loadImageFile")
-    public static void setImageBitmap(ImageView view, File imageFile) {
+    public static void setImageBitmap(final ImageView view, final File imageFile) {
         if (imageFile != null) {
             Log.d(LOG_TAG, "setImageBitmap : " + imageFile.getPath());
         } else {
             Log.w(LOG_TAG, "setImageBitmap : null");
         }
-        Picasso.with(view.getContext()).load(imageFile).fit().into(view);
+
+        mImageOperator.setFileToImageView(view, imageFile);
     }
 }
