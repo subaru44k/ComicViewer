@@ -29,7 +29,6 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:onClick="@{body.onClick}"
             bind:loadImageFile="@{body.mainImageFile}"
             android:layout_marginTop="0dp"
             android:layout_marginLeft="0dp" />

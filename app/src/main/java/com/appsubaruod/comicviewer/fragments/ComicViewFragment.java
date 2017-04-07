@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -72,6 +73,18 @@ public class ComicViewFragment extends Fragment {
         // create binder object and set
         mComicViewModel = new ComicViewModel();
         binder.setBody(mComicViewModel);
+
+        // add OnTouchListener
+        // TODO consider adding listner on this place is appropriate or not.
+        binder.getRoot().setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                mComicViewModel.onTouch(view, motionEvent);
+
+                // consume this event and do not pass to other method
+                return true;
+            }
+        });
 
         return binder.getRoot();
     }

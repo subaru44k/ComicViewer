@@ -4,6 +4,7 @@ import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -41,8 +42,10 @@ public class ComicViewModel extends BaseObservable {
         notifyPropertyChanged(BR.mainImageFile);
     }
 
-    public void onClick(View view) {
-        mComicModel.readNextPage();
+    public void onTouch(View view, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            mComicModel.readNextPage();
+        }
     }
 
     @BindingAdapter("loadImageFile")
