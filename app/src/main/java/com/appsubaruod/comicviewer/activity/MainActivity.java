@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         mActivityMainViewModel = new ActivityMainViewModel();
@@ -63,16 +64,18 @@ public class MainActivity extends AppCompatActivity
 
         mNavigationItemInteraction = new NavigationItemInteraction(getApplicationContext());
 
-        FragmentManager manager = getSupportFragmentManager();
-        // FragmentTransaction を開始
-        FragmentTransaction transaction = manager.beginTransaction();
+        // stop adding fragment when rotationg
+        if (savedInstanceState == null) {
+            FragmentManager manager = getSupportFragmentManager();
+            // FragmentTransaction を開始
+            FragmentTransaction transaction = manager.beginTransaction();
 
-        // FragmentContainer のレイアウトに、MyFragment を割当てる
-        transaction.add(R.id.FragmentContainer, ComicViewFragment.newInstance());
+            // FragmentContainer のレイアウトに、MyFragment を割当てる
+            transaction.add(R.id.FragmentContainer, ComicViewFragment.newInstance());
 
-        // 変更を確定して FragmentTransaction を終える
-        transaction.commit();
-
+            // 変更を確定して FragmentTransaction を終える
+            transaction.commit();
+        }
     }
 
     @Override
