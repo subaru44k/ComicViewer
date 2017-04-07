@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity
 
         mNavigationItemInteraction = new NavigationItemInteraction(getApplicationContext());
 
+        // stop adding fragment when rotationg
         if (savedInstanceState == null) {
             FragmentManager manager = getSupportFragmentManager();
             // FragmentTransaction を開始
