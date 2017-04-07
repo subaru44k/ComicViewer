@@ -74,18 +74,6 @@ public class ComicViewFragment extends Fragment {
         mComicViewModel = new ComicViewModel();
         binder.setBody(mComicViewModel);
 
-        // add OnTouchListener
-        // TODO consider adding listner on this place is appropriate or not.
-        binder.getRoot().setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                mComicViewModel.onTouch(view, motionEvent);
-
-                // consume this event and do not pass to other method
-                return true;
-            }
-        });
-
         return binder.getRoot();
     }
 }

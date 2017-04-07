@@ -78,11 +78,19 @@ public class ComicModel {
         readSpecifiedPage(mPageIndex + 1);
     }
 
+    public void readPreviousPage() {
+        readSpecifiedPage(mPageIndex - 1);
+    }
+
     /**
      * Requests to send file and set page index in the model
      * @param pageIndex Request page index
      */
     public void readSpecifiedPage(final int pageIndex) {
+        if (pageIndex <= 0 || pageIndex > mMaxPageIndex) {
+            Log.d(LOG_TAG, "Specified page out of index. Ignore : " + pageIndex);
+            return;
+        }
         // If page index is small, try to load without blocking
         // If fails to load, execute again after extraction is finished
         final File file = obtainFile(pageIndex);
@@ -109,6 +117,10 @@ public class ComicModel {
      * @param pageIndex Request page index
      */
     public void requestSpecifiedPage(final int pageIndex) {
+        if (pageIndex <= 0 || pageIndex > mMaxPageIndex) {
+            Log.d(LOG_TAG, "Specified page out of index. Ignore : " + pageIndex);
+            return;
+        }
         // If page index is small, try to load without blocking
         // If fails to load, execute again after extraction is finished
         final File file = obtainFile(pageIndex);

@@ -17,7 +17,33 @@
         tools:context="com.appsubaruod.comicviewer.activity.MainActivity"
         tools:showIn="@layout/app_bar_main">
 
-        <!-- TODO: Update blank fragment layout -->
+        <View
+            android:id="@+id/leftSideView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@+id/imageView2"
+            app:layout_constraintRight_toLeftOf="@+id/guideline3"
+            app:layout_constraintTop_toTopOf="parent"
+            android:onClick="@{body.clickLeftSide}" />
+
+        <View
+            android:id="@+id/rightSideView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+            app:layout_constraintRight_toRightOf="@+id/imageView2"
+            app:layout_constraintTop_toTopOf="parent"
+            android:onClick="@{body.clickRightSide}" />
 
 
         <ImageView
@@ -31,7 +57,15 @@
             app:layout_constraintTop_toTopOf="parent"
             bind:loadImageFile="@{body.mainImageFile}"
             android:layout_marginTop="0dp"
-            android:layout_marginLeft="0dp" />
+            android:layout_marginLeft="0dp"
+            app:layout_constraintHorizontal_bias="0.5" />
+
+        <android.support.constraint.Guideline
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/guideline3"
+            app:layout_constraintGuide_percent="0.5"
+            android:orientation="vertical" />
 
 
     </android.support.constraint.ConstraintLayout>
