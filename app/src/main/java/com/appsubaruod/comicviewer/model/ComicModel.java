@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 
@@ -67,6 +68,7 @@ public class ComicModel {
             @Override
             public void run() {
                 Log.d(LOG_TAG, uri.toString());
+                EventBus.getDefault().postSticky(new BookOpenedEvent());
                 unpackZip(uri);
             }
         });
