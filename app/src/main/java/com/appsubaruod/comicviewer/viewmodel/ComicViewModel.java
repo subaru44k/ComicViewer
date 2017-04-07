@@ -41,8 +41,14 @@ public class ComicViewModel extends BaseObservable {
         notifyPropertyChanged(BR.mainImageFile);
     }
 
-    public void onClick(View view) {
+    public void clickLeftSide(View view) {
+        Log.d(LOG_TAG, "Click left side");
         mComicModel.readNextPage();
+    }
+
+    public void clickRightSide(View view) {
+        Log.d(LOG_TAG, "Click right side");
+        mComicModel.readPreviousPage();
     }
 
     @BindingAdapter("loadImageFile")

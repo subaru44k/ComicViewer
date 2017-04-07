@@ -78,37 +78,31 @@ public class ComicModel {
         readSpecifiedPage(mPageIndex + 1);
     }
 
+    public void readPreviousPage() {
+        readSpecifiedPage(mPageIndex - 1);
+    }
+
     /**
      * Requests to send file and set page index in the model
      * @param pageIndex Request page index
      */
-    public void readSpecifiedPage(final int pageIndex) {
-        // If page index is small, try to load without blocking
-        // If fails to load, execute again after extraction is finished
-        final File file = obtainFile(pageIndex);
-        if (pageIndex < MAX_PAGE_WITHOUT_BLOCKING) {
-            if (file != null) {
-                // call postSticky, so as not to drop sending event during fragment translation
-                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
-                mPageIndex = pageIndex;
-                return;
-            }
-        }
-        mWorkerThread.execute(new Runnable() {
-            @Override
-            public void run() {
-                // call postSticky, so as not to drop sending event during fragment translation
-                EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
-                mPageIndex = pageIndex;
-            }
-        });
+    public void readSpecifiedPage(int pageIndex) {
+        requestSpecifiedPage(pageIndex, true);
     }
 
     /**
      * Reqests to send file without setting page index
      * @param pageIndex Request page index
      */
-    public void requestSpecifiedPage(final int pageIndex) {
+    public void requestSpecifiedPage(int pageIndex) {
+        requestSpecifiedPage(pageIndex, false);
+    }
+
+    private void requestSpecifiedPage(final int pageIndex, final boolean storePage) {
+        if (pageIndex <= 0 || pageIndex > mMaxPageIndex) {
+            Log.d(LOG_TAG, "Specified page out of index. Ignore : " + pageIndex);
+            return;
+        }
         // If page index is small, try to load without blocking
         // If fails to load, execute again after extraction is finished
         final File file = obtainFile(pageIndex);
@@ -116,6 +110,9 @@ public class ComicModel {
             if (file != null) {
                 // call postSticky, so as not to drop sending event during fragment translation
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
+                if (storePage) {
+                    mPageIndex = pageIndex;
+                }
                 return;
             }
         }
@@ -124,6 +121,9 @@ public class ComicModel {
             public void run() {
                 // call postSticky, so as not to drop sending event during fragment translation
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
+                if (storePage) {
+                    mPageIndex = pageIndex;
+                }
             }
         });
     }
