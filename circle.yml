@@ -14,5 +14,5 @@ test:
     - ./license_copy.sh
   override:
     - ./gradlew assembleDebug
-    - cp -r project-name/build/outputs $CIRCLE_ARTIFACTS
+    - cp -r ${CIRCLE_PROJECT_REPONAME}/build/outputs $CIRCLE_ARTIFACTS
 
