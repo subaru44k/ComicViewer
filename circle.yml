@@ -19,5 +19,5 @@ deployment:
   master:
     branch: feature-SupportDeployGate
     commands:
-      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@${CIRCLE_ARTIFACTS}/apk/app-debug.apk" -F "message=deployed" https://deploygate.com/api/users/subaru44k/apps
+      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-debug.apk" -F "message=deployed" https://deploygate.com/api/users/subaru44k/apps
 
