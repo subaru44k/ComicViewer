@@ -15,4 +15,9 @@ test:
   override:
     - ./gradlew assembleDebug
     - cp -r app/build/outputs $CIRCLE_ARTIFACTS
+deployment:
+  master:
+    branch: master
+    commands:
+      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@${CIRCLE_ARTIFACTS}/apk/app-debug.apk" -F "message=deployed" https://deploygate.com/api/users/subaru44k/apps
 
