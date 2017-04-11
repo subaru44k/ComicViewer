@@ -13,7 +13,7 @@ test:
   pre:
     - ./license_copy.sh
   override:
-    - ./gradlew assembleDebug
+    - ./gradlew assembleDebug --console=plain
     - cp -r app/build/outputs $CIRCLE_ARTIFACTS
 deployment:
   master:
