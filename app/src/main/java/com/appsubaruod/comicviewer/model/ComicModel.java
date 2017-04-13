@@ -1,8 +1,10 @@
 package com.appsubaruod.comicviewer.model;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
@@ -21,6 +23,7 @@ import java.util.concurrent.Executors;
  */
 public class ComicModel {
     public static final int MAX_PAGE_WITHOUT_BLOCKING = 20;
+    public static final String EXTENSION_NAME_ZIP = ".zip";
     private static ComicModel mComicModelInstance;
     private int mPageIndex = 0;
     private int mMaxPageIndex = 0;
@@ -29,6 +32,7 @@ public class ComicModel {
     private final String LOG_TAG = "ComicModel";
     private final Executor mWorkerThread = Executors.newSingleThreadExecutor();
 
+    private Context mContext;
     private FileOperator mFileOperator;
 
     private FileOperator.OnFileCopy mOnFileCopy = new FileOperator.OnFileCopy() {
@@ -54,7 +58,8 @@ public class ComicModel {
     };
 
     private ComicModel(Context context) {
-        mFileOperator = new FileOperator(context);
+        mContext = context;
+        mFileOperator = new FileOperator(mContext);
         mFileOperator.registerCallback(mOnFileCopy);
     }
 
@@ -86,16 +91,61 @@ public class ComicModel {
 
     private void copyToAppStorage(Uri uri) {
         initialize();
-        if (uri.getPath().contains(".zip")) {
-            // maybe zip file
-            mFileOperator.unpackZip(uri);
-        } else if (uri.getPath().endsWith(".png")
-                || uri.getPath().endsWith(".jpg")
-                || uri.getPath().endsWith(".jpeg")
-                || uri.getPath().endsWith(".gif")) {
-            // image file
-            mFileOperator.copyImageFiles(uri);
+        String path = mFileOperator.getPath(uri);
+        if (path == null) {
+            Log.d(LOG_TAG, "Unsupported uri. Maybe network storage: " + uri.toString());
+            Log.d(LOG_TAG, "try to open");
+            try {
+                ContentResolver cR = mContext.getContentResolver();
+                MimeTypeMap mime = MimeTypeMap.getSingleton();
+                String extensionFromMimeType = mime.getExtensionFromMimeType(cR.getType(uri));
+                Log.d(LOG_TAG, "mime-type : " + extensionFromMimeType);
+                if ("zip".equals(extensionFromMimeType)) {
+                    mFileOperator.unpackZip(uri);
+                } else {
+                    Log.w(LOG_TAG, "this type of file is not supported now!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                return;
+            }
         }
+        String lowerPath = path.toLowerCase();
+        Log.d(LOG_TAG, "lowerPath : " + lowerPath);
+        if (lowerPath.contains(EXTENSION_NAME_ZIP)) {
+            // maybe zip fileØØ
+            uri = getUserFriendlyZipUri(uri);
+            mFileOperator.unpackZip(uri);
+        } else if (mFileOperator.isImageFile(lowerPath)) {
+            // image file
+            Log.d(LOG_TAG, lowerPath);
+            mFileOperator.copyImageFiles(uri);
+
+        }
+    }
+
+    /**
+     * Calculates the user frendly uri and returns it.
+     * E.g. file://aaa.zip/hoge.png is transferred into file://aaa.zip.
+     * FIXME uri containing .zip as file name (not extension) may cause problem.
+     * E.g. file://hoge.zipfile/hoge.png
+     * @param uri userSelected Uri which can be undesired.
+     * @return Seemingly desired uri
+     */
+    private Uri getUserFriendlyZipUri(Uri uri) {
+        if (!uri.getPath().endsWith(EXTENSION_NAME_ZIP)) {
+            Log.d(LOG_TAG, uri.toString());
+
+            // build new uri
+            Uri.Builder builder = uri.buildUpon();
+            String encodedPath = uri.getEncodedPath();
+            int desiredEnd = encodedPath.lastIndexOf(EXTENSION_NAME_ZIP) + EXTENSION_NAME_ZIP.length();
+            builder.encodedPath(encodedPath.substring(0, desiredEnd));
+            return builder.build();
+        }
+
+        return uri;
     }
 
     public void readNextPage() {

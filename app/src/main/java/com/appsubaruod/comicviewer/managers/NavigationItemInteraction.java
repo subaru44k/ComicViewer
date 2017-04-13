@@ -1,8 +1,12 @@
 package com.appsubaruod.comicviewer.managers;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -43,7 +47,9 @@ public class NavigationItemInteraction {
 
         switch (id) {
             case R.id.nav_openbook:
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");
                 EventBus.getDefault().post(new RequestActivityIntentEvent(intent, CHOSE_FILE_CODE));
                 break;

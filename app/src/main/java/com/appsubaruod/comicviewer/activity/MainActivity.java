@@ -1,12 +1,17 @@
  package com.appsubaruod.comicviewer.activity;
 
+ import android.Manifest;
  import android.content.Intent;
+ import android.content.pm.PackageManager;
  import android.databinding.DataBindingUtil;
  import android.os.Bundle;
+ import android.support.annotation.NonNull;
  import android.support.design.widget.FloatingActionButton;
  import android.support.design.widget.NavigationView;
+ import android.support.v4.app.ActivityCompat;
  import android.support.v4.app.FragmentManager;
  import android.support.v4.app.FragmentTransaction;
+ import android.support.v4.content.ContextCompat;
  import android.support.v4.view.GravityCompat;
  import android.support.v4.widget.DrawerLayout;
  import android.support.v7.app.AppCompatActivity;
@@ -25,6 +30,7 @@
  import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
  import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
  import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
+ import com.appsubaruod.comicviewer.utils.messages.RequestPermissionEvent;
  import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
  import com.appsubaruod.comicviewer.viewmodel.ActivityMainViewModel;
 
@@ -41,6 +47,8 @@ public class MainActivity extends AppCompatActivity
     private NavigationItemInteraction mNavigationItemInteraction;
     private static final String LOG_TAG = MainActivity.class.getName();
 
+    private static final int PERMISSION_REQUEST_READ_STORAGE = 200;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +57,31 @@ public class MainActivity extends AppCompatActivity
 
         mActivityMainViewModel = new ActivityMainViewModel();
         binding.setActivityMainModel(mActivityMainViewModel);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                // check if the app have permission
+                // Here, thisActivity is the current activity
+                if (ContextCompat.checkSelfPermission(MainActivity.super.getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    EventBus.getDefault().post(new RequestPermissionEvent());
+                }
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -180,6 +213,13 @@ public class MainActivity extends AppCompatActivity
         manager.popBackStack();
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void handleRequestPermissionEvent(RequestPermissionEvent event) {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                PERMISSION_REQUEST_READ_STORAGE);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -195,6 +235,25 @@ public class MainActivity extends AppCompatActivity
                 break;
             default:
                 break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_READ_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    EventBus.getDefault().post(new NavigationItemCloseEvent());
+                }
+                return;
+            }
         }
     }
 }
