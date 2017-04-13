@@ -1,8 +1,10 @@
 package com.appsubaruod.comicviewer.model;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
@@ -10,42 +12,55 @@ import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * Created by s-yamada on 2017/03/28.
  */
 public class ComicModel {
     public static final int MAX_PAGE_WITHOUT_BLOCKING = 20;
+    public static final String EXTENSION_NAME_ZIP = ".zip";
     private static ComicModel mComicModelInstance;
     private int mPageIndex = 0;
     private int mMaxPageIndex = 0;
     private Map<Integer, File> mFileMap = new HashMap<>();
 
     private final String LOG_TAG = "ComicModel";
-    private final Context mContext;
-    private final File mFileDir;
     private final Executor mWorkerThread = Executors.newSingleThreadExecutor();
 
-    private static final int BUFFER = 512;
-    private static final int TOOBIG = 0x6400000; // maximum file size : 100MB
-    private static final int TOOMANY = 10000;     // maximum file entries
+    private Context mContext;
+    private FileOperator mFileOperator;
+
+    private FileOperator.OnFileCopy mOnFileCopy = new FileOperator.OnFileCopy() {
+        @Override
+        public void onCopiedSingleFile(int fileCount, File outFile, int unpackedBytes) {
+            storeFileList(fileCount, outFile);
+            setMaxPageIndex(fileCount);
+
+            if (fileCount == 1) {
+                mPageIndex = 1;
+                // call postSticky, so as not to drop sending event during fragment transition
+                EventBus.getDefault().postSticky(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
+                // notify book is opened
+                EventBus.getDefault().postSticky(new BookOpenedEvent());
+            }
+        }
+
+        @Override
+        public void onCopyCompleted(int maxFileCount) {
+            // Send notification including maxpage info
+            EventBus.getDefault().post(new LoadCompleteEvent(maxFileCount));
+        }
+    };
 
     private ComicModel(Context context) {
         mContext = context;
-        mFileDir = mContext.getFilesDir();
+        mFileOperator = new FileOperator(mContext);
+        mFileOperator.registerCallback(mOnFileCopy);
     }
 
     public static ComicModel getInstance(Context mContext) {
@@ -68,10 +83,69 @@ public class ComicModel {
             @Override
             public void run() {
                 Log.d(LOG_TAG, uri.toString());
-                EventBus.getDefault().postSticky(new BookOpenedEvent());
-                unpackZip(uri);
+
+                copyToAppStorage(uri);
             }
         });
+    }
+
+    private void copyToAppStorage(Uri uri) {
+        initialize();
+        String path = mFileOperator.getPath(uri);
+        if (path == null) {
+            Log.d(LOG_TAG, "Unsupported uri. Maybe network storage: " + uri.toString());
+            Log.d(LOG_TAG, "try to open");
+            try {
+                ContentResolver cR = mContext.getContentResolver();
+                MimeTypeMap mime = MimeTypeMap.getSingleton();
+                String extensionFromMimeType = mime.getExtensionFromMimeType(cR.getType(uri));
+                Log.d(LOG_TAG, "mime-type : " + extensionFromMimeType);
+                if ("zip".equals(extensionFromMimeType)) {
+                    mFileOperator.unpackZip(uri);
+                } else {
+                    Log.w(LOG_TAG, "this type of file is not supported now!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                return;
+            }
+        }
+        String lowerPath = path.toLowerCase();
+        Log.d(LOG_TAG, "lowerPath : " + lowerPath);
+        if (lowerPath.contains(EXTENSION_NAME_ZIP)) {
+            // maybe zip fileØØ
+            uri = getUserFriendlyZipUri(uri);
+            mFileOperator.unpackZip(uri);
+        } else if (mFileOperator.isImageFile(lowerPath)) {
+            // image file
+            Log.d(LOG_TAG, lowerPath);
+            mFileOperator.copyImageFiles(uri);
+
+        }
+    }
+
+    /**
+     * Calculates the user frendly uri and returns it.
+     * E.g. file://aaa.zip/hoge.png is transferred into file://aaa.zip.
+     * FIXME uri containing .zip as file name (not extension) may cause problem.
+     * E.g. file://hoge.zipfile/hoge.png
+     * @param uri userSelected Uri which can be undesired.
+     * @return Seemingly desired uri
+     */
+    private Uri getUserFriendlyZipUri(Uri uri) {
+        if (!uri.getPath().endsWith(EXTENSION_NAME_ZIP)) {
+            Log.d(LOG_TAG, uri.toString());
+
+            // build new uri
+            Uri.Builder builder = uri.buildUpon();
+            String encodedPath = uri.getEncodedPath();
+            int desiredEnd = encodedPath.lastIndexOf(EXTENSION_NAME_ZIP) + EXTENSION_NAME_ZIP.length();
+            builder.encodedPath(encodedPath.substring(0, desiredEnd));
+            return builder.build();
+        }
+
+        return uri;
     }
 
     public void readNextPage() {
@@ -128,81 +202,9 @@ public class ComicModel {
         });
     }
 
-    private String validateFilename(String filename, String intendedDir) throws IOException {
-        File f = new File(filename);
-        String canonicalPath = f.getCanonicalPath();
 
-        File iD = new File(intendedDir);
-        String canonicalID = iD.getCanonicalPath();
-
-        if (canonicalPath.startsWith(canonicalID)) {
-            return canonicalPath;
-        } else {
-            throw new IllegalStateException("File is outside extraction target directory.");
-        }
-    }
 
     private void unpackZip(Uri zipUri) {
-
-        initialize();
-
-        InputStream is;
-        ZipInputStream zis = null;
-        try {
-            is = mContext.getContentResolver().openInputStream(zipUri);
-            zis = new ZipInputStream(new BufferedInputStream(is));
-            ZipEntry entry;
-            int entries = 0;
-            int total = 0;
-
-            while ((entry = zis.getNextEntry()) != null) {
-                System.out.println("Extracting: " + entry);
-                int count;
-                byte data[] = new byte[BUFFER];
-                // check if file name is valid and size is adequate
-                String name = validateFilename(entry.getName(), ".");
-                File outFile = new File(mFileDir + name);
-                // create parent dirs
-                outFile.getParentFile().mkdirs();
-                FileOutputStream fos = new FileOutputStream(outFile);
-                BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
-                while (total <= TOOBIG && (count = zis.read(data, 0, BUFFER)) != -1) {
-                    dest.write(data, 0, count);
-                    total += count;
-                }
-                dest.flush();
-                dest.close();
-                zis.closeEntry();
-
-                entries++;
-                storeFileList(entries, outFile);
-                setMaxPageIndex(entries);
-
-                if (entries == 1) {
-                    mPageIndex = 1;
-                    // call postSticky, so as not to drop sending event during fragment translation
-                    EventBus.getDefault().postSticky(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
-                }
-                if (entries > TOOMANY) {
-                    throw new IllegalStateException("Too many files to unzip.");
-                }
-                if (total > TOOBIG) {
-                    throw new IllegalStateException("File being unzipped is too big.");
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                zis.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // Send notification including maxpage info
-            EventBus.getDefault().post(new LoadCompleteEvent(mMaxPageIndex));
-        }
     }
 
     private void initialize() {
