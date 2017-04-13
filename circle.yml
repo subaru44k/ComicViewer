@@ -13,6 +13,11 @@ test:
   pre:
     - ./license_copy.sh
   override:
-    - ./gradlew assembleDebug
+    - ./gradlew assembleDebug --console=plain
     - cp -r app/build/outputs $CIRCLE_ARTIFACTS
+deployment:
+  master:
+    branch: master
+    commands:
+      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-debug.apk" -F "message=deployed" https://deploygate.com/api/users/subaru44k/apps
 
