@@ -1,4 +1,4 @@
-package com.appsubaruod.comicviewer.model;
+package com.appsubaruod.comicviewer.model.file;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.appsubaruod.comicviewer.utils.ImageOperator.isImageFile;
+
 /**
  * Created by s-yamada on 2017/04/10.
  */
@@ -50,7 +52,7 @@ public class FileOperator {
         mCallbackSet.add(mCallback);
     }
 
-    public void unRegisterCallback(OnFileCopy mCallback) {
+    public void unregisterCallback(OnFileCopy mCallback) {
         mCallbackSet.remove(mCallback);
     }
 
@@ -267,13 +269,6 @@ public class FileOperator {
         notifyCopiedSingleFile(entry, outFile, (int) inChannel.size());
     }
 
-    public boolean isImageFile(String fileName) {
-        String lowerFileName = fileName.toLowerCase();
-        return lowerFileName.endsWith(".png")
-                || lowerFileName.endsWith(".jpg")
-                || lowerFileName.endsWith(".jpeg")
-                || lowerFileName.endsWith(".gif");
-    }
 
     private void notifyCopiedSingleFile(int fileNumber, File outFile, int unpackedBytes) {
         for (OnFileCopy item : mCallbackSet) {
@@ -301,7 +296,7 @@ public class FileOperator {
         }
     }
 
-    protected interface OnFileCopy {
+    interface OnFileCopy {
         void onCopiedSingleFile(int fileCount, File copiedFile, int unpackedBytes);
         void onCopyCompleted(int maxFileCount);
     }

@@ -40,4 +40,12 @@ public class ImageOperator {
             Picasso.with(view.getContext()).load(imageFile).resize(width, height).centerInside().into(view);
         }
     }
+
+    public static boolean isImageFile(String fileName) {
+        String lowerFileName = fileName.toLowerCase();
+        return lowerFileName.endsWith(".png")
+                || lowerFileName.endsWith(".jpg")
+                || lowerFileName.endsWith(".jpeg")
+                || lowerFileName.endsWith(".gif");
+    }
 }
