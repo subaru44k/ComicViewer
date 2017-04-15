@@ -19,6 +19,6 @@ deployment:
   master:
     branch: master
     commands:
-      - MESSAGE=`git log --pretty=oneline --abbrev-commit``
+      - MESSAGE=`git log --pretty=oneline --abbrev-commit`
       - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-debug.apk" -F "message=${MESSAGE}" https://deploygate.com/api/users/subaru44k/apps
 
