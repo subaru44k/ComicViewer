@@ -19,6 +19,5 @@ deployment:
   master:
     branch: master
     commands:
-      - MESSAGE=`git log -1 --pretty=%B`
-      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-debug.apk" -F "message=${MESSAGE}" https://deploygate.com/api/users/subaru44k/apps
+      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-debug.apk" -F "message=`git log -n 1 --pretty=format:"%h %s"`" https://deploygate.com/api/users/subaru44k/apps
 
