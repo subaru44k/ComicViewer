@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -19,8 +20,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IllegalFormatException;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -41,9 +45,9 @@ public class FileOperator {
     private static final int TOOBIG = 0x6400000; // maximum file size : 100MB
     private static final int TOOMANY = 10000;     // maximum file entries
 
-    public FileOperator(Context context) {
+    public FileOperator(Context context, File fileDir) {
         mContext = context;
-        mFileDir = mContext.getFilesDir();
+        mFileDir = fileDir;
     }
 
     private Set<OnFileCopy> mCallbackSet = new HashSet<>();
@@ -57,7 +61,7 @@ public class FileOperator {
     }
 
     public void unpackZip(Uri uri) throws IllegalFormatException {
-
+        String dirnameToCreate = getStoringDirString(uri);
         InputStream is;
         ZipInputStream zis = null;
         int entries = 0;
@@ -73,7 +77,8 @@ public class FileOperator {
                 byte data[] = new byte[BUFFER];
                 // check if file name is valid and size is adequate
                 String name = validateFilename(entry.getName(), ".");
-                File outFile = new File(mFileDir + name);
+                String outPath = getStoredDir(dirnameToCreate) + File.separator + name;
+                File outFile = new File(outPath);
                 // create parent dirs
                 outFile.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(outFile);
@@ -109,6 +114,10 @@ public class FileOperator {
             notifyCopyCompleted(entries);
         }
 
+    }
+
+    public String getStoringDirString(Uri uri) {
+        return uri.getPath();
     }
 
     /**
@@ -294,6 +303,51 @@ public class FileOperator {
         } else {
             throw new IllegalStateException("File is outside extraction target directory.");
         }
+    }
+
+    public List<File> listFilesAndFilesSubDirectories(String directoryName){
+        List<File> fileList = new ArrayList();
+        File directory = new File(directoryName);
+        //get all the files from a directory
+        File[] fList = directory.listFiles();
+        for (File file : fList){
+            if (file.isFile()){
+                fileList.add(file);
+            } else if (file.isDirectory()){
+                fileList.addAll(listFilesAndFilesSubDirectories(file.getAbsolutePath()));
+            }
+        }
+
+        return fileList;
+    }
+
+    public List<File> getFileList(String fileName) throws FileNotFoundException {
+        File targetDir = getStoredDir(fileName);
+
+        if (!targetDir.exists()) {
+            throw new FileNotFoundException("cannot find directory : " + targetDir.toString());
+        }
+
+        return listFilesAndFilesSubDirectories(targetDir.getAbsolutePath());
+    }
+
+    @NonNull
+    private File getStoredDir(String fileName) {
+        // obtain target dir
+        String filePath = mFileDir.getAbsolutePath() + File.separatorChar + fileName;
+        File f = new File(filePath);
+        String name = f.getName();
+        File targetDir;
+        final int lastPeriodPos = name.lastIndexOf('.');
+        if (lastPeriodPos <= 0) {
+            // No period after first character - return name as it was passed in
+            targetDir = new File(filePath);
+        } else {
+            // Remove the last period and everything after it
+            File renamed = new File(f.getParent(), name.substring(0, lastPeriodPos));
+            targetDir = new File(renamed.getPath());
+        }
+        return targetDir;
     }
 
     interface OnFileCopy {
