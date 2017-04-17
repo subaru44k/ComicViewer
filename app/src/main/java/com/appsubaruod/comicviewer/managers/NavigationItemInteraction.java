@@ -1,12 +1,8 @@
 package com.appsubaruod.comicviewer.managers;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -14,9 +10,7 @@ import com.appsubaruod.comicviewer.R;
 import com.appsubaruod.comicviewer.model.ComicModel;
 import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
 import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
-import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
 import com.appsubaruod.comicviewer.utils.messages.RequestActivityIntentEvent;
-import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -54,10 +48,10 @@ public class NavigationItemInteraction {
                 EventBus.getDefault().post(new RequestActivityIntentEvent(intent, CHOSE_FILE_CODE));
                 break;
             case R.id.nav_gallery:
-                EventBus.getDefault().post(new ReadComicEvent());
+                mComicModel.requestReadComicView();
                 break;
             case R.id.nav_slideshow:
-                EventBus.getDefault().post(new SelectPageEvent(mComicModel.getPageIndex(), mComicModel.getMaxPageIndex()));
+                mComicModel.requestSelectPageView();
                 break;
             case R.id.nav_manage:
                 break;
