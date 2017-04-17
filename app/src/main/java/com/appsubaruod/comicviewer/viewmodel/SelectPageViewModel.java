@@ -98,6 +98,10 @@ public class SelectPageViewModel extends BaseObservable {
         }
     }
 
+    public void onClick(View view) {
+        select(view);
+    }
+
     @BindingAdapter("loadSelectedImageFile")
     public static void setImageBitmap(ImageView view, File imageFile) {
         if (imageFile != null) {
