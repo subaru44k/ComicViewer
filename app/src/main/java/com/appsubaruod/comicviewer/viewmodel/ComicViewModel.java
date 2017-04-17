@@ -53,6 +53,11 @@ public class ComicViewModel extends BaseObservable {
         mComicModel.readPreviousPage();
     }
 
+    public boolean onLongClick(View view) {
+        Log.d(LOG_TAG, "onLongClick");
+        return mComicModel.requestSelectPageView();
+    }
+
     @BindingAdapter("loadImageFile")
     public static void setImageBitmap(final ImageView view, final File imageFile) {
         if (imageFile != null) {

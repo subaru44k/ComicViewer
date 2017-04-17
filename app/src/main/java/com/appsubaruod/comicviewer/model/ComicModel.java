@@ -8,6 +8,8 @@ import android.webkit.MimeTypeMap;
 
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
+import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
+import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -24,9 +26,10 @@ import java.util.concurrent.Executors;
 public class ComicModel {
     public static final int MAX_PAGE_WITHOUT_BLOCKING = 20;
     public static final String EXTENSION_NAME_ZIP = ".zip";
+    public static final int INIT_PAGE_SIZE = 0;
     private static ComicModel mComicModelInstance;
-    private int mPageIndex = 0;
-    private int mMaxPageIndex = 0;
+    private int mPageIndex = INIT_PAGE_SIZE;
+    private int mMaxPageIndex = INIT_PAGE_SIZE;
     private Map<Integer, File> mFileMap = new HashMap<>();
 
     private final String LOG_TAG = "ComicModel";
@@ -202,11 +205,6 @@ public class ComicModel {
         });
     }
 
-
-
-    private void unpackZip(Uri zipUri) {
-    }
-
     private void initialize() {
         mFileMap = new HashMap<>();
         mPageIndex = 0;
@@ -235,5 +233,17 @@ public class ComicModel {
 
     private File obtainFile(int page) {
         return mFileMap.get(page);
+    }
+
+    public void requestReadComicView() {
+        EventBus.getDefault().post(new ReadComicEvent());
+    }
+
+    public boolean requestSelectPageView() {
+        if (getMaxPageIndex() != INIT_PAGE_SIZE) {
+            EventBus.getDefault().post(new SelectPageEvent(getPageIndex(), getMaxPageIndex()));
+            return true;
+        }
+        return false;
     }
 }

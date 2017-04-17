@@ -28,7 +28,8 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/guideline3"
             app:layout_constraintTop_toTopOf="parent"
-            android:onClick="@{body.clickLeftSide}" />
+            android:onClick="@{body.clickLeftSide}"
+            android:onLongClick="@{body.onLongClick}"/>
 
         <View
             android:id="@+id/rightSideView"
@@ -42,7 +43,8 @@
             app:layout_constraintLeft_toLeftOf="@+id/guideline3"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:onClick="@{body.clickRightSide}" />
+            android:onClick="@{body.clickRightSide}"
+            android:onLongClick="@{body.onLongClick}"/>
 
         <ImageView
             android:id="@+id/imageView2"
