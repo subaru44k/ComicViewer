@@ -13,11 +13,12 @@ test:
   pre:
     - ./license_copy.sh
   override:
-    - ./gradlew assembleDebug --console=plain
+    - openssl aes-256-cbc -d -in ci/signed_key.jks.enc -out ci/signed_key.jks -k ${DECRIPTION_KEY}
+    - ./gradlew assembleRelease --console=plain
     - cp -r app/build/outputs $CIRCLE_ARTIFACTS
 deployment:
   master:
     branch: master
     commands:
-      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-debug.apk" -F "message=`git log -n 1 --pretty=format:"%h %s"`" https://deploygate.com/api/users/subaru44k/apps
+      - curl -F "token=${DEPLOYGATE_API_KEY}" -F "file=@./app/build/outputs/apk/app-release.apk" -F "message=`git log -n 1 --pretty=format:"%h %s"`" https://deploygate.com/api/users/subaru44k/apps
 
