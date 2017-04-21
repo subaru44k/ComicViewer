@@ -129,7 +129,12 @@ public class FileOrganizer {
             return;
         }
         File targetDir = new File(getFilesDir() + File.separator + dirName);
-        mFileOperator.unpackZip(targetDir, uri);
+        content = mFileOperator.unpackZip(targetDir, uri);
+        setContent(dirName, content);
+    }
+
+    private void setContent(String dirName, ResolvedContent content) {
+        mResolvedContentMap.put(dirName, content);
     }
 
     private ResolvedContent getContent(String storingDirName) {
@@ -156,7 +161,7 @@ public class FileOrganizer {
                 content.store(file, index, file.length());
                 index++;
             }
-            mResolvedContentMap.put(storedDirName, content);
+            setContent(storedDirName, content);
             Log.i(LOG_TAG, "found in directory cache : " + storedDirName);
             return content;
         }

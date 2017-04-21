@@ -58,9 +58,10 @@ public class FileOperator {
         mCallbackSet.remove(mCallback);
     }
 
-    public void unpackZip(File outDirFile, Uri uri) throws IllegalFormatException {
+    public ResolvedContent unpackZip(File outDirFile, Uri uri) throws IllegalArgumentException {
         InputStream is;
         ZipInputStream zis = null;
+        ResolvedContent content = new ResolvedContent();
         int entries = 0;
         try {
             is = mContext.getContentResolver().openInputStream(uri);
@@ -90,6 +91,7 @@ public class FileOperator {
 
                 entries++;
                 notifyCopiedSingleFile(entries, outFile, total);
+                content.store(outFile, entries, total);
 
                 if (entries > TOOMANY) {
                     throw new IllegalStateException("Too many files to unzip.");
@@ -109,8 +111,10 @@ public class FileOperator {
                 e.printStackTrace();
             }
             notifyCopyCompleted(entries);
+            return content;
         }
     }
+
     public void copyImageFiles(File outDir, File imageDir) throws IllegalFormatException {
         try {
             int entries = 0;
