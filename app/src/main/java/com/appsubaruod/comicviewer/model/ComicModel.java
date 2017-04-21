@@ -116,11 +116,11 @@ public class ComicModel {
         if (lowerPath.contains(EXTENSION_NAME_ZIP)) {
             // maybe zip fileØØ
             uri = getUserFriendlyZipUri(uri);
-            mFileOrganizer.requestZipContent(uri);
+            mFileOrganizer.requestLocalZipContent(uri);
         } else if (isImageFile(lowerPath)) {
             // image file
             Log.d(LOG_TAG, lowerPath);
-            mFileOrganizer.requestImageContent(uri);
+            mFileOrganizer.requestLocalImageContent(uri);
         }
     }
 

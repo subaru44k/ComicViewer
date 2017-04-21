@@ -37,7 +37,6 @@ import static com.appsubaruod.comicviewer.utils.ImageOperator.isImageFile;
 
 public class FileOperator {
     private Context mContext;
-    private File mFileDir;
 
     private static final String LOG_TAG = FileOperator.class.getName();
 
@@ -45,9 +44,8 @@ public class FileOperator {
     private static final int TOOBIG = 0x6400000; // maximum file size : 100MB
     private static final int TOOMANY = 10000;     // maximum file entries
 
-    public FileOperator(Context context, File fileDir) {
+    public FileOperator(Context context) {
         mContext = context;
-        mFileDir = fileDir;
     }
 
     private Set<OnFileCopy> mCallbackSet = new HashSet<>();
@@ -60,8 +58,7 @@ public class FileOperator {
         mCallbackSet.remove(mCallback);
     }
 
-    public void unpackZip(Uri uri) throws IllegalFormatException {
-        String dirnameToCreate = getStoringDirString(uri);
+    public void unpackZip(File outDirFile, Uri uri) throws IllegalFormatException {
         InputStream is;
         ZipInputStream zis = null;
         int entries = 0;
@@ -77,7 +74,7 @@ public class FileOperator {
                 byte data[] = new byte[BUFFER];
                 // check if file name is valid and size is adequate
                 String name = validateFilename(entry.getName(), ".");
-                String outPath = getStoredDir(dirnameToCreate) + File.separator + name;
+                String outPath = outDirFile + File.separator + name;
                 File outFile = new File(outPath);
                 // create parent dirs
                 outFile.getParentFile().mkdirs();
@@ -113,144 +110,11 @@ public class FileOperator {
             }
             notifyCopyCompleted(entries);
         }
-
     }
-
-    public String getStoringDirString(Uri uri) {
-        return uri.getPath();
-    }
-
-    /**
-     * Get a file path from a Uri. This will get the the path for Storage Access
-     * Framework Documents, as well as the _data field for the MediaStore and
-     * other file-based ContentProviders.
-     *
-     * @param uri The Uri to query.
-     * @author paulburke
-     */
-    public String getPath(final Uri uri) {
-        // DocumentProvider
-        if (DocumentsContract.isDocumentUri(mContext, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
-                }
-
-                // TODO handle non-primary volumes
-            }
-            // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
-
-                final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                return getDataColumn(contentUri, null, null);
-            }
-            // MediaProvider
-            else if (isMediaDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-
-                final String selection = "_id=?";
-                final String[] selectionArgs = new String[] {
-                        split[1]
-                };
-
-                return getDataColumn(contentUri, selection, selectionArgs);
-            }
-        }
-        // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            return getDataColumn(uri, null, null);
-        }
-        // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the value of the data column for this Uri. This is useful for
-     * MediaStore Uris, and other file-based ContentProviders.
-     *
-     * @param uri The Uri to query.
-     * @param selection (Optional) Filter used in the query.
-     * @param selectionArgs (Optional) Selection arguments used in the query.
-     * @return The value of the _data column, which is typically a file path.
-     */
-    public String getDataColumn(Uri uri, String selection,
-                                       String[] selectionArgs) {
-
-        Cursor cursor = null;
-        final String column = "_data";
-        final String[] projection = {
-                column
-        };
-
-        try {
-            cursor = mContext.getContentResolver().query(uri, projection, selection, selectionArgs,
-                    null);
-            if (cursor != null && cursor.moveToFirst()) {
-                final int column_index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(column_index);
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
-        return null;
-    }
-
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is ExternalStorageProvider.
-     */
-    public boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is DownloadsProvider.
-     */
-    public boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is MediaProvider.
-     */
-    public boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-    public void copyImageFiles(Uri uri) throws IllegalFormatException {
-        File file = new File(getPath(uri));
+    public void copyImageFiles(File outDir, File imageDir) throws IllegalFormatException {
         try {
             int entries = 0;
-            for (File eachFile : file.getParentFile().listFiles(new FileFilter() {
+            for (File eachFile : imageDir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
                     if (isImageFile(pathname.toString())) {
@@ -260,7 +124,7 @@ public class FileOperator {
                 }
             })) {
                 Log.d(LOG_TAG, eachFile.getAbsolutePath());
-                File outFile = new File(mFileDir + eachFile.getName());
+                File outFile = new File(outDir + eachFile.getName());
                 copyImageFile(eachFile, outFile, entries++);
             }
             notifyCopyCompleted(entries);
@@ -321,33 +185,12 @@ public class FileOperator {
         return fileList;
     }
 
-    public List<File> getFileList(String fileName) throws FileNotFoundException {
-        File targetDir = getStoredDir(fileName);
-
+    public List<File> getFileList(File targetDir) throws FileNotFoundException {
         if (!targetDir.exists()) {
             throw new FileNotFoundException("cannot find directory : " + targetDir.toString());
         }
 
         return listFilesAndFilesSubDirectories(targetDir.getAbsolutePath());
-    }
-
-    @NonNull
-    private File getStoredDir(String fileName) {
-        // obtain target dir
-        String filePath = mFileDir.getAbsolutePath() + File.separatorChar + fileName;
-        File f = new File(filePath);
-        String name = f.getName();
-        File targetDir;
-        final int lastPeriodPos = name.lastIndexOf('.');
-        if (lastPeriodPos <= 0) {
-            // No period after first character - return name as it was passed in
-            targetDir = new File(filePath);
-        } else {
-            // Remove the last period and everything after it
-            File renamed = new File(f.getParent(), name.substring(0, lastPeriodPos));
-            targetDir = new File(renamed.getPath());
-        }
-        return targetDir;
     }
 
     interface OnFileCopy {
