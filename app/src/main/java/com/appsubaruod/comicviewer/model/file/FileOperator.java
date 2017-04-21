@@ -1,13 +1,7 @@
 package com.appsubaruod.comicviewer.model.file;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -21,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IllegalFormatException;
 import java.util.List;
@@ -58,7 +51,7 @@ public class FileOperator {
         mCallbackSet.remove(mCallback);
     }
 
-    public ResolvedContent unpackZip(File outDirFile, Uri uri) throws IllegalArgumentException {
+    public ResolvedContent unpackZip(File outDirFile, Uri uri) {
         InputStream is;
         ZipInputStream zis = null;
         ResolvedContent content = new ResolvedContent();
@@ -103,6 +96,8 @@ public class FileOperator {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
