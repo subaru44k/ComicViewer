@@ -1,11 +1,11 @@
 package com.appsubaruod.comicviewer.model;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 
+import com.appsubaruod.comicviewer.managers.HistoryOrganizer;
+import com.appsubaruod.comicviewer.model.file.FileOrganizer;
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import static com.appsubaruod.comicviewer.utils.ImageOperator.isImageFile;
 
 /**
  * Created by s-yamada on 2017/03/28.
@@ -36,12 +38,13 @@ public class ComicModel {
     private final Executor mWorkerThread = Executors.newSingleThreadExecutor();
 
     private Context mContext;
-    private FileOperator mFileOperator;
+    private FileOrganizer mFileOrganizer;
+    private HistoryOrganizer mHistoryOrganizer;
 
-    private FileOperator.OnFileCopy mOnFileCopy = new FileOperator.OnFileCopy() {
+    private FileOrganizer.FileResolve mFileResolve = new FileOrganizer.FileResolve() {
         @Override
-        public void onCopiedSingleFile(int fileCount, File outFile, int unpackedBytes) {
-            storeFileList(fileCount, outFile);
+        public void onSingleFileResolved(int fileCount, File resolvedFile, int sizeBytes) {
+            storeFileList(fileCount, resolvedFile);
             setMaxPageIndex(fileCount);
 
             if (fileCount == 1) {
@@ -54,7 +57,7 @@ public class ComicModel {
         }
 
         @Override
-        public void onCopyCompleted(int maxFileCount) {
+        public void onAllFileResolved(int maxFileCount) {
             // Send notification including maxpage info
             EventBus.getDefault().post(new LoadCompleteEvent(maxFileCount));
         }
@@ -62,8 +65,9 @@ public class ComicModel {
 
     private ComicModel(Context context) {
         mContext = context;
-        mFileOperator = new FileOperator(mContext);
-        mFileOperator.registerCallback(mOnFileCopy);
+        mFileOrganizer = new FileOrganizer(mContext);
+        mFileOrganizer.registerCallback(mFileResolve);
+        mHistoryOrganizer = new HistoryOrganizer();
     }
 
     public static ComicModel getInstance(Context mContext) {
@@ -87,49 +91,44 @@ public class ComicModel {
             public void run() {
                 Log.d(LOG_TAG, uri.toString());
 
-                copyToAppStorage(uri);
+                requestContent(uri);
             }
         });
     }
 
-    private void copyToAppStorage(Uri uri) {
+    private void requestContent(Uri uri) {
         initialize();
-        String path = mFileOperator.getPath(uri);
-        if (path == null) {
+        String contentPath = mFileOrganizer.getPath(uri);
+        if (contentPath == null) {
             Log.d(LOG_TAG, "Unsupported uri. Maybe network storage: " + uri.toString());
             Log.d(LOG_TAG, "try to open");
             try {
-                ContentResolver cR = mContext.getContentResolver();
-                MimeTypeMap mime = MimeTypeMap.getSingleton();
-                String extensionFromMimeType = mime.getExtensionFromMimeType(cR.getType(uri));
-                Log.d(LOG_TAG, "mime-type : " + extensionFromMimeType);
-                if ("zip".equals(extensionFromMimeType)) {
-                    mFileOperator.unpackZip(uri);
-                } else {
-                    Log.w(LOG_TAG, "this type of file is not supported now!");
-                }
+                mFileOrganizer.requestNetworkContent(uri);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 return;
             }
         }
-        String lowerPath = path.toLowerCase();
-        Log.d(LOG_TAG, "lowerPath : " + lowerPath);
-        if (lowerPath.contains(EXTENSION_NAME_ZIP)) {
+        requestLocalContent(uri, contentPath);
+    }
+
+    private void requestLocalContent(Uri uri, String contentPath) {
+        String contentLowerPath = contentPath.toLowerCase();
+        Log.d(LOG_TAG, "lowerPath : " + contentLowerPath);
+        if (contentLowerPath.contains(EXTENSION_NAME_ZIP)) {
             // maybe zip fileØØ
             uri = getUserFriendlyZipUri(uri);
-            mFileOperator.unpackZip(uri);
-        } else if (mFileOperator.isImageFile(lowerPath)) {
+            mFileOrganizer.requestLocalZipContent(uri);
+        } else if (isImageFile(contentLowerPath)) {
             // image file
-            Log.d(LOG_TAG, lowerPath);
-            mFileOperator.copyImageFiles(uri);
-
+            Log.d(LOG_TAG, contentLowerPath);
+            mFileOrganizer.requestLocalImageContent(uri);
         }
     }
 
     /**
-     * Calculates the user frendly uri and returns it.
+     * Calculates the user friendly uri and returns it.
      * E.g. file://aaa.zip/hoge.png is transferred into file://aaa.zip.
      * FIXME uri containing .zip as file name (not extension) may cause problem.
      * E.g. file://hoge.zipfile/hoge.png
