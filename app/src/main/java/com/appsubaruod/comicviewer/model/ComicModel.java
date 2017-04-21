@@ -88,15 +88,15 @@ public class ComicModel {
             public void run() {
                 Log.d(LOG_TAG, uri.toString());
 
-                copyToAppStorage(uri);
+                requestContent(uri);
             }
         });
     }
 
-    private void copyToAppStorage(Uri uri) {
+    private void requestContent(Uri uri) {
         initialize();
-        String path = mFileOrganizer.getPath(uri);
-        if (path == null) {
+        String contentPath = mFileOrganizer.getPath(uri);
+        if (contentPath == null) {
             Log.d(LOG_TAG, "Unsupported uri. Maybe network storage: " + uri.toString());
             Log.d(LOG_TAG, "try to open");
             try {
@@ -107,25 +107,25 @@ public class ComicModel {
                 return;
             }
         }
-        copyLocalFile(uri, path);
+        requestLocalContent(uri, contentPath);
     }
 
-    private void copyLocalFile(Uri uri, String path) {
-        String lowerPath = path.toLowerCase();
-        Log.d(LOG_TAG, "lowerPath : " + lowerPath);
-        if (lowerPath.contains(EXTENSION_NAME_ZIP)) {
+    private void requestLocalContent(Uri uri, String contentPath) {
+        String contentLowerPath = contentPath.toLowerCase();
+        Log.d(LOG_TAG, "lowerPath : " + contentLowerPath);
+        if (contentLowerPath.contains(EXTENSION_NAME_ZIP)) {
             // maybe zip fileØØ
             uri = getUserFriendlyZipUri(uri);
             mFileOrganizer.requestLocalZipContent(uri);
-        } else if (isImageFile(lowerPath)) {
+        } else if (isImageFile(contentLowerPath)) {
             // image file
-            Log.d(LOG_TAG, lowerPath);
+            Log.d(LOG_TAG, contentLowerPath);
             mFileOrganizer.requestLocalImageContent(uri);
         }
     }
 
     /**
-     * Calculates the user frendly uri and returns it.
+     * Calculates the user friendly uri and returns it.
      * E.g. file://aaa.zip/hoge.png is transferred into file://aaa.zip.
      * FIXME uri containing .zip as file name (not extension) may cause problem.
      * E.g. file://hoge.zipfile/hoge.png
