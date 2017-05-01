@@ -1,17 +1,22 @@
 package com.appsubaruod.comicviewer.fragments;
 
 
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.appsubaruod.comicviewer.R;
-import com.appsubaruod.comicviewer.databinding.FragmentHistoryBinding;
-import com.appsubaruod.comicviewer.viewmodel.HistoryViewModel;
+import com.appsubaruod.comicviewer.viewmodel.HistoryItemViewModel;
+import com.appsubaruod.comicviewer.views.HistoryItemAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -19,9 +24,9 @@ import com.appsubaruod.comicviewer.viewmodel.HistoryViewModel;
  * create an instance of this fragment.
  */
 public class HistoryFragment extends Fragment {
+    private RecyclerView mRecyclerView;
 
     private static final String LOG_TAG = HistoryFragment.class.getName();
-    HistoryViewModel mHistoryViewModel;
 
     // This constructor is called by Android FW.
     // Do not add arguments for fragment installation. Use static method insted.
@@ -64,13 +69,25 @@ public class HistoryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        FragmentHistoryBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_history, container, false);
 
-        mHistoryViewModel = new HistoryViewModel();
-        binding.setHistory(mHistoryViewModel);
+        View view = inflater.inflate(R.layout.fragment_history, container, false);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
 
-        return binding.getRoot();
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        return view;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        List<HistoryItemViewModel> histories = new ArrayList<>();
+        histories.add(new HistoryItemViewModel("aaa"));
+        histories.add(new HistoryItemViewModel("iii"));
+        histories.add(new HistoryItemViewModel("uuu"));
+
+        HistoryItemAdapter adapter = new HistoryItemAdapter(histories);
+        mRecyclerView.setAdapter(adapter);
+    }
 }
