@@ -7,6 +7,7 @@ import android.util.Log;
 import com.appsubaruod.comicviewer.managers.HistoryOrganizer;
 import com.appsubaruod.comicviewer.model.file.FileOrganizer;
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
+import com.appsubaruod.comicviewer.utils.messages.HistoryViewEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
 import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
@@ -16,6 +17,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -57,9 +59,11 @@ public class ComicModel {
         }
 
         @Override
-        public void onAllFileResolved(int maxFileCount) {
+        public void onAllFileResolved(String dirName, int maxFileCount) {
             // Send notification including maxpage info
             EventBus.getDefault().post(new LoadCompleteEvent(maxFileCount));
+            // add to history
+            mHistoryOrganizer.add(dirName);
         }
     };
 
@@ -244,5 +248,14 @@ public class ComicModel {
             return true;
         }
         return false;
+    }
+
+    public boolean requestHistoryView() {
+        EventBus.getDefault().post(new HistoryViewEvent());
+        return true;
+    }
+
+    public List<String> getHistories() {
+        return mHistoryOrganizer.getHistories();
     }
 }

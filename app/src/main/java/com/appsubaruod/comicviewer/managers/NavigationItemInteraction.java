@@ -26,7 +26,6 @@ public class NavigationItemInteraction {
     private ComicModel mComicModel;
     private Context mContext;
 
-
     public NavigationItemInteraction(Context context) {
         mContext = context;
         mComicModel = ComicModel.getInstance(mContext);
@@ -54,6 +53,7 @@ public class NavigationItemInteraction {
                 mComicModel.requestSelectPageView();
                 break;
             case R.id.nav_manage:
+                mComicModel.requestHistoryView();
                 break;
             case R.id.nav_share:
                 break;

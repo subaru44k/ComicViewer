@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -39,14 +40,14 @@ public class FileOrganizer {
         }
 
         @Override
-        public void onCopyCompleted(int maxFileCount) {
-            notifyAllFileResolved(maxFileCount);
+        public void onCopyCompleted(String dirName, int maxFileCount) {
+            notifyAllFileResolved(dirName, maxFileCount);
         }
     };
 
-    private void notifyAllFileResolved(int maxFileCount) {
+    private void notifyAllFileResolved(String dirName, int maxFileCount) {
         for (FileResolve callback : mCallbackSet) {
-            callback.onAllFileResolved(maxFileCount);
+            callback.onAllFileResolved(dirName, maxFileCount);
         }
     }
 
@@ -124,11 +125,10 @@ public class FileOrganizer {
             for (File file : content.getFiles()) {
                 notifySingleFileResolved(content.getContentIndex(file), file, content.getContentSize(file));
             }
-            notifyAllFileResolved(content.fileCount());
+            notifyAllFileResolved(dirName, content.fileCount());
             return;
         }
-        File targetDir = new File(getFilesDir() + File.separator + dirName);
-        content = mFileOperator.unpackZip(targetDir, uri);
+        content = mFileOperator.unpackZip(getFilesDir(), dirName, uri);
         setContent(dirName, content);
     }
 
@@ -136,6 +136,7 @@ public class FileOrganizer {
         mResolvedContentMap.put(dirName, content);
     }
 
+    @Nullable
     private ResolvedContent getContent(String storingDirName) {
         try{
             return getResolvedContent(storingDirName);
@@ -202,8 +203,7 @@ public class FileOrganizer {
         File targetFile = resolveFile(uri);
 
         // does not cache image files
-        File targetDir = new File(getFilesDir() + File.separator + IMAGE_DIR_NAME);
-        mFileOperator.copyImageFiles(targetDir, targetFile.getParentFile());
+        mFileOperator.copyImageFiles(getFilesDir(), IMAGE_DIR_NAME, targetFile.getParentFile());
     }
 
     /**
@@ -334,6 +334,6 @@ public class FileOrganizer {
 
     public interface FileResolve {
         void onSingleFileResolved(int fileCount, File resolvedFile, int sizeBytes);
-        void onAllFileResolved(int maxFileCount);
+        void onAllFileResolved(String dirName, int maxFileCount);
     }
 }

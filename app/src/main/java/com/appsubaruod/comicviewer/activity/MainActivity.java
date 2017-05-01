@@ -23,9 +23,11 @@
  import com.appsubaruod.comicviewer.R;
  import com.appsubaruod.comicviewer.databinding.ActivityMainBinding;
  import com.appsubaruod.comicviewer.fragments.ComicViewFragment;
+ import com.appsubaruod.comicviewer.fragments.HistoryFragment;
  import com.appsubaruod.comicviewer.fragments.SelectPageFragment;
  import com.appsubaruod.comicviewer.managers.NavigationItemInteraction;
  import com.appsubaruod.comicviewer.utils.messages.BackKeyEvent;
+ import com.appsubaruod.comicviewer.utils.messages.HistoryViewEvent;
  import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
  import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;
  import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
@@ -202,6 +204,18 @@ public class MainActivity extends AppCompatActivity
 
         // change fragment and add to back stack
         transaction.replace(R.id.FragmentContainer, SelectPageFragment.newInstance());
+        transaction.addToBackStack(null);
+
+        transaction.commit();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void showHistoryFragment(HistoryViewEvent event) {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+
+        // change fragment and add to back stack
+        transaction.replace(R.id.FragmentContainer, HistoryFragment.newInstance());
         transaction.addToBackStack(null);
 
         transaction.commit();
