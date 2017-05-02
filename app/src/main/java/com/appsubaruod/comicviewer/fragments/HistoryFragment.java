@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import com.appsubaruod.comicviewer.R;
 import com.appsubaruod.comicviewer.viewmodel.HistoryViewModel;
+import com.appsubaruod.comicviewer.views.SpannedGridLayoutManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -68,7 +69,23 @@ public class HistoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
 
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        SpannedGridLayoutManager manager = new SpannedGridLayoutManager(
+                new SpannedGridLayoutManager.GridSpanLookup() {
+                    @Override
+                    public SpannedGridLayoutManager.SpanInfo getSpanInfo(int position) {
+
+                        // Conditions for 2x2 items
+                        if (position % 6 == 0 || position % 6 == 4) {
+                            return new SpannedGridLayoutManager.SpanInfo(2, 2);
+                        } else {
+                            return new SpannedGridLayoutManager.SpanInfo(1, 1);
+                        }
+                    }
+                },
+                3, // number of columns
+                1f // how big is default item
+        );
+        recyclerView.setLayoutManager(manager);
 
         mHistoryViewModel = new HistoryViewModel(recyclerView);
 

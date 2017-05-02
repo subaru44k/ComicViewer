@@ -44,6 +44,7 @@ public class ImageOperator {
         } else {
             // TODO if width is 0 but height is not 0 case, this would collapse layout.
             // Is width and height updated simultaneously?
+            Log.d(LOG_TAG, "Load image with picassso : " + imageFile);
             Picasso.with(view.getContext()).load(imageFile).resize(width, height).centerInside().into(view);
         }
     }
