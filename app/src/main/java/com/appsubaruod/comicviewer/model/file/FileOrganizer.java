@@ -35,8 +35,8 @@ public class FileOrganizer {
 
     private FileOperator.OnFileCopy mOnFileCopy = new FileOperator.OnFileCopy() {
         @Override
-        public void onCopiedSingleFile(int fileCount, File copiedFile, int unpackedBytes) {
-            notifySingleFileResolved(fileCount, copiedFile, unpackedBytes);
+        public void onCopiedSingleFile(String dirName, int fileCount, File copiedFile, int unpackedBytes) {
+            notifySingleFileResolved(dirName, fileCount, copiedFile, unpackedBytes);
         }
 
         @Override
@@ -51,9 +51,9 @@ public class FileOrganizer {
         }
     }
 
-    private void notifySingleFileResolved(int fileCount, File copiedFile, int unpackedBytes) {
+    private void notifySingleFileResolved(String dirName, int fileCount, File copiedFile, int unpackedBytes) {
         for (FileResolve callback : mCallbackSet) {
-            callback.onSingleFileResolved(fileCount, copiedFile, unpackedBytes);
+            callback.onSingleFileResolved(dirName, fileCount, copiedFile, unpackedBytes);
         }
     }
 
@@ -123,7 +123,7 @@ public class FileOrganizer {
         if (content != null) {
             // found content in memory cache or app storage
             for (File file : content.getFiles()) {
-                notifySingleFileResolved(content.getContentIndex(file), file, content.getContentSize(file));
+                notifySingleFileResolved(dirName, content.getContentIndex(file), file, content.getContentSize(file));
             }
             notifyAllFileResolved(dirName, content.fileCount());
             return;
@@ -333,7 +333,7 @@ public class FileOrganizer {
     }
 
     public interface FileResolve {
-        void onSingleFileResolved(int fileCount, File resolvedFile, int sizeBytes);
+        void onSingleFileResolved(String dirName, int fileCount, File resolvedFile, int sizeBytes);
         void onAllFileResolved(String dirName, int maxFileCount);
     }
 }

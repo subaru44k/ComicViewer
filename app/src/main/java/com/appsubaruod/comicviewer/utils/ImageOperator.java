@@ -29,7 +29,14 @@ public class ImageOperator {
             view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
+                    int updated_width = view.getWidth();
+                    int updated_height = view.getHeight();
+
                     Log.d(LOG_TAG, "onGlobalLayout");
+                    if (updated_width == 0 && updated_height == 0) {
+                        Log.d(LOG_TAG, "still width and height is 0");
+                        return;
+                    }
                     Picasso.with(view.getContext()).load(imageFile).resize(view.getWidth(), view.getHeight()).centerInside().into(view);
                     view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }

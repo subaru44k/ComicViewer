@@ -2,6 +2,7 @@ package com.appsubaruod.comicviewer.views;
 
 import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -17,6 +18,7 @@ import java.util.List;
 
 public class HistoryItemAdapter extends RecyclerView.Adapter<HistoryItemAdapter.HistoryItemViewHolder> {
     private List<HistoryItemViewModel> mHistories;
+    private static final String LOG_TAG = HistoryItemAdapter.class.getName();
 
     public HistoryItemAdapter(List<HistoryItemViewModel> histories) {
         mHistories = histories;
@@ -30,6 +32,7 @@ public class HistoryItemAdapter extends RecyclerView.Adapter<HistoryItemAdapter.
 
     @Override
     public void onBindViewHolder(HistoryItemViewHolder holder, int position) {
+        Log.d(LOG_TAG, "onBindViewHolder: " + position);
         holder.getHistoryItemBinding().setHistoryitem(mHistories.get(position));
     }
 

@@ -1,10 +1,9 @@
 package com.appsubaruod.comicviewer.fragments;
 
 
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,11 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.appsubaruod.comicviewer.R;
-import com.appsubaruod.comicviewer.viewmodel.HistoryItemViewModel;
-import com.appsubaruod.comicviewer.views.HistoryItemAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.appsubaruod.comicviewer.viewmodel.HistoryViewModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -24,7 +19,7 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class HistoryFragment extends Fragment {
-    private RecyclerView mRecyclerView;
+    private HistoryViewModel mHistoryViewModel;
 
     private static final String LOG_TAG = HistoryFragment.class.getName();
 
@@ -71,23 +66,12 @@ public class HistoryFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
 
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+        mHistoryViewModel = new HistoryViewModel(recyclerView);
 
         return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        List<HistoryItemViewModel> histories = new ArrayList<>();
-        histories.add(new HistoryItemViewModel("aaa"));
-        histories.add(new HistoryItemViewModel("iii"));
-        histories.add(new HistoryItemViewModel("uuu"));
-
-        HistoryItemAdapter adapter = new HistoryItemAdapter(histories);
-        mRecyclerView.setAdapter(adapter);
     }
 }

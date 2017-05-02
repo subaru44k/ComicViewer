@@ -27,6 +27,7 @@
  import com.appsubaruod.comicviewer.fragments.SelectPageFragment;
  import com.appsubaruod.comicviewer.managers.NavigationItemInteraction;
  import com.appsubaruod.comicviewer.utils.messages.BackKeyEvent;
+ import com.appsubaruod.comicviewer.utils.messages.HistoryChangedEvent;
  import com.appsubaruod.comicviewer.utils.messages.HistoryViewEvent;
  import com.appsubaruod.comicviewer.utils.messages.MenuClickEvent;
  import com.appsubaruod.comicviewer.utils.messages.NavigationItemCloseEvent;

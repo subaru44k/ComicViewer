@@ -84,7 +84,7 @@ public class FileOperator {
                 zis.closeEntry();
 
                 entries++;
-                notifyCopiedSingleFile(entries, outFile, total);
+                notifyCopiedSingleFile(dirName, entries, outFile, total);
                 content.store(outFile, entries, total);
 
                 if (entries > TOOMANY) {
@@ -126,7 +126,7 @@ public class FileOperator {
             })) {
                 Log.d(LOG_TAG, eachFile.getAbsolutePath());
                 File outFile = new File(outDir + eachFile.getName());
-                copyImageFile(eachFile, outFile, entries++);
+                copyImageFile(dirName, eachFile, outFile, entries++);
             }
             notifyCopyCompleted(dirName, entries);
         } catch (IOException e) {
@@ -134,19 +134,19 @@ public class FileOperator {
         }
     }
 
-    private void copyImageFile(File inFile, File outFile, int entry) throws IOException {
+    private void copyImageFile(String dirName, File inFile, File outFile, int entry) throws IOException {
         FileChannel inChannel = new FileInputStream(inFile).getChannel();
         FileChannel outChannel = new FileOutputStream(outFile).getChannel();
 
         inChannel.transferTo(0, inChannel.size(), outChannel);
 
-        notifyCopiedSingleFile(entry, outFile, (int) inChannel.size());
+        notifyCopiedSingleFile(dirName, entry, outFile, (int) inChannel.size());
     }
 
 
-    private void notifyCopiedSingleFile(int fileNumber, File outFile, int unpackedBytes) {
+    private void notifyCopiedSingleFile(String dirName, int fileNumber, File outFile, int unpackedBytes) {
         for (OnFileCopy item : mCallbackSet) {
-            item.onCopiedSingleFile(fileNumber, outFile, unpackedBytes);
+            item.onCopiedSingleFile(dirName, fileNumber, outFile, unpackedBytes);
         }
     }
 
@@ -195,7 +195,7 @@ public class FileOperator {
     }
 
     interface OnFileCopy {
-        void onCopiedSingleFile(int fileCount, File copiedFile, int unpackedBytes);
+        void onCopiedSingleFile(String dirName, int fileCount, File copiedFile, int unpackedBytes);
         void onCopyCompleted(String dirName, int maxFileCount);
     }
 
