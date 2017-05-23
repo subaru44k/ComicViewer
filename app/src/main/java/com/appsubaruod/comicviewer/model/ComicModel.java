@@ -4,18 +4,23 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.appsubaruod.comicviewer.ThreadContainer;
 import com.appsubaruod.comicviewer.managers.HistoryOrganizer;
 import com.appsubaruod.comicviewer.model.file.FileOrganizer;
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
+import com.appsubaruod.comicviewer.utils.messages.HistoryChangedEvent;
+import com.appsubaruod.comicviewer.utils.messages.HistoryViewEvent;
 import com.appsubaruod.comicviewer.utils.messages.LoadCompleteEvent;
 import com.appsubaruod.comicviewer.utils.messages.ReadComicEvent;
 import com.appsubaruod.comicviewer.utils.messages.SelectPageEvent;
 import com.appsubaruod.comicviewer.utils.messages.SetImageEvent;
+import com.appsubaruod.comicviewer.viewmodel.HistoryItemViewModel;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -35,29 +40,35 @@ public class ComicModel {
     private Map<Integer, File> mFileMap = new HashMap<>();
 
     private final String LOG_TAG = "ComicModel";
-    private final Executor mWorkerThread = Executors.newSingleThreadExecutor();
+    private final Executor mWorkerThread = ThreadContainer.getSingleWorkerThread();
 
     private Context mContext;
     private FileOrganizer mFileOrganizer;
     private HistoryOrganizer mHistoryOrganizer;
 
+    private String mTitleName;
+
     private FileOrganizer.FileResolve mFileResolve = new FileOrganizer.FileResolve() {
         @Override
-        public void onSingleFileResolved(int fileCount, File resolvedFile, int sizeBytes) {
+        public void onSingleFileResolved(String dirName, int fileCount, File resolvedFile, int sizeBytes) {
             storeFileList(fileCount, resolvedFile);
             setMaxPageIndex(fileCount);
 
             if (fileCount == 1) {
                 mPageIndex = 1;
+                mTitleName = dirName;
+                // open ReadFragment
+                requestReadComicView();
                 // call postSticky, so as not to drop sending event during fragment transition
                 EventBus.getDefault().postSticky(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
+                mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, resolvedFile, 1));
                 // notify book is opened
                 EventBus.getDefault().postSticky(new BookOpenedEvent());
             }
         }
 
         @Override
-        public void onAllFileResolved(int maxFileCount) {
+        public void onAllFileResolved(String dirName, int maxFileCount) {
             // Send notification including maxpage info
             EventBus.getDefault().post(new LoadCompleteEvent(maxFileCount));
         }
@@ -117,7 +128,7 @@ public class ComicModel {
         String contentLowerPath = contentPath.toLowerCase();
         Log.d(LOG_TAG, "lowerPath : " + contentLowerPath);
         if (contentLowerPath.contains(EXTENSION_NAME_ZIP)) {
-            // maybe zip fileØØ
+            // maybe zip file
             uri = getUserFriendlyZipUri(uri);
             mFileOrganizer.requestLocalZipContent(uri);
         } else if (isImageFile(contentLowerPath)) {
@@ -188,6 +199,7 @@ public class ComicModel {
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 if (storePage) {
                     mPageIndex = pageIndex;
+                    mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, file, pageIndex));
                 }
                 return;
             }
@@ -199,6 +211,7 @@ public class ComicModel {
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
                 if (storePage) {
                     mPageIndex = pageIndex;
+                    mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, file, pageIndex));
                 }
             }
         });
@@ -244,5 +257,14 @@ public class ComicModel {
             return true;
         }
         return false;
+    }
+
+    public boolean requestHistoryView() {
+        EventBus.getDefault().post(new HistoryViewEvent());
+        return true;
+    }
+
+    public List<HistoryItemViewModel> getHistories() {
+        return mHistoryOrganizer.getHistories();
     }
 }

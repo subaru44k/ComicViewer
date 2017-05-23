@@ -51,7 +51,8 @@ public class FileOperator {
         mCallbackSet.remove(mCallback);
     }
 
-    public ResolvedContent unpackZip(File outDirFile, Uri uri) {
+    public ResolvedContent unpackZip(File filesDir, String dirName, Uri uri) {
+        File outDirFile = new File(filesDir + File.separator + dirName);
         InputStream is;
         ZipInputStream zis = null;
         ResolvedContent content = new ResolvedContent();
@@ -83,7 +84,7 @@ public class FileOperator {
                 zis.closeEntry();
 
                 entries++;
-                notifyCopiedSingleFile(entries, outFile, total);
+                notifyCopiedSingleFile(dirName, entries, outFile, total);
                 content.store(outFile, entries, total);
 
                 if (entries > TOOMANY) {
@@ -105,12 +106,13 @@ public class FileOperator {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            notifyCopyCompleted(entries);
+            notifyCopyCompleted(dirName, entries);
             return content;
         }
     }
 
-    public void copyImageFiles(File outDir, File imageDir) throws IllegalFormatException {
+    public void copyImageFiles(File filesDir, String dirName, File imageDir) throws IllegalFormatException {
+        File outDir = new File(filesDir + File.separator + dirName);
         try {
             int entries = 0;
             for (File eachFile : imageDir.listFiles(new FileFilter() {
@@ -124,33 +126,33 @@ public class FileOperator {
             })) {
                 Log.d(LOG_TAG, eachFile.getAbsolutePath());
                 File outFile = new File(outDir + eachFile.getName());
-                copyImageFile(eachFile, outFile, entries++);
+                copyImageFile(dirName, eachFile, outFile, entries++);
             }
-            notifyCopyCompleted(entries);
+            notifyCopyCompleted(dirName, entries);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void copyImageFile(File inFile, File outFile, int entry) throws IOException {
+    private void copyImageFile(String dirName, File inFile, File outFile, int entry) throws IOException {
         FileChannel inChannel = new FileInputStream(inFile).getChannel();
         FileChannel outChannel = new FileOutputStream(outFile).getChannel();
 
         inChannel.transferTo(0, inChannel.size(), outChannel);
 
-        notifyCopiedSingleFile(entry, outFile, (int) inChannel.size());
+        notifyCopiedSingleFile(dirName, entry, outFile, (int) inChannel.size());
     }
 
 
-    private void notifyCopiedSingleFile(int fileNumber, File outFile, int unpackedBytes) {
+    private void notifyCopiedSingleFile(String dirName, int fileNumber, File outFile, int unpackedBytes) {
         for (OnFileCopy item : mCallbackSet) {
-            item.onCopiedSingleFile(fileNumber, outFile, unpackedBytes);
+            item.onCopiedSingleFile(dirName, fileNumber, outFile, unpackedBytes);
         }
     }
 
-    private void notifyCopyCompleted(int maxPage) {
+    private void notifyCopyCompleted(String dirName, int maxPage) {
         for (OnFileCopy item : mCallbackSet) {
-            item.onCopyCompleted(maxPage);
+            item.onCopyCompleted(dirName, maxPage);
         }
     }
 
@@ -193,8 +195,8 @@ public class FileOperator {
     }
 
     interface OnFileCopy {
-        void onCopiedSingleFile(int fileCount, File copiedFile, int unpackedBytes);
-        void onCopyCompleted(int maxFileCount);
+        void onCopiedSingleFile(String dirName, int fileCount, File copiedFile, int unpackedBytes);
+        void onCopyCompleted(String dirName, int maxFileCount);
     }
 
 }
