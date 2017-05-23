@@ -22,12 +22,14 @@ public class HistoryItemViewModel extends BaseObservable {
     private static final String LOG_TAG = BaseObservable.class.getName();
     private String mTitle;
     private File mImageFile;
+    private int mPageIndex;
     private int mBackgroundColor = Color.parseColor("#FFFFFF");
     private static ImageOperator mImageOperator = new ImageOperator();
 
-    public HistoryItemViewModel(String title, File imageFile) {
+    public HistoryItemViewModel(String title, File imageFile, int pageIndex) {
         mTitle = title;
         mImageFile = imageFile;
+        mPageIndex = pageIndex;
         notifyPropertyChanged(BR.title);
         notifyPropertyChanged(BR.imageFile);
 
@@ -69,6 +71,10 @@ public class HistoryItemViewModel extends BaseObservable {
     @Bindable
     public int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    public int getPageIndex() {
+        return mPageIndex;
     }
 
     @BindingAdapter("loadHistoryImageFile")

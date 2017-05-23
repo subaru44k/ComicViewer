@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.appsubaruod.comicviewer.ThreadContainer;
 import com.appsubaruod.comicviewer.managers.HistoryOrganizer;
 import com.appsubaruod.comicviewer.model.file.FileOrganizer;
 import com.appsubaruod.comicviewer.utils.messages.BookOpenedEvent;
@@ -39,7 +40,7 @@ public class ComicModel {
     private Map<Integer, File> mFileMap = new HashMap<>();
 
     private final String LOG_TAG = "ComicModel";
-    private final Executor mWorkerThread = Executors.newSingleThreadExecutor();
+    private final Executor mWorkerThread = ThreadContainer.getSingleWorkerThread();
 
     private Context mContext;
     private FileOrganizer mFileOrganizer;
@@ -60,7 +61,7 @@ public class ComicModel {
                 requestReadComicView();
                 // call postSticky, so as not to drop sending event during fragment transition
                 EventBus.getDefault().postSticky(new SetImageEvent(mPageIndex, obtainFile(mPageIndex)));
-                mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, resolvedFile));
+                mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, resolvedFile, 1));
                 // notify book is opened
                 EventBus.getDefault().postSticky(new BookOpenedEvent());
             }
@@ -196,9 +197,9 @@ public class ComicModel {
             if (file != null) {
                 // call postSticky, so as not to drop sending event during fragment translation
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
-                mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, file));
                 if (storePage) {
                     mPageIndex = pageIndex;
+                    mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, file, pageIndex));
                 }
                 return;
             }
@@ -208,9 +209,9 @@ public class ComicModel {
             public void run() {
                 // call postSticky, so as not to drop sending event during fragment translation
                 EventBus.getDefault().postSticky(new SetImageEvent(pageIndex, file));
-                mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, file));
                 if (storePage) {
                     mPageIndex = pageIndex;
+                    mHistoryOrganizer.addOrReflesh(new HistoryItemViewModel(mTitleName, file, pageIndex));
                 }
             }
         });

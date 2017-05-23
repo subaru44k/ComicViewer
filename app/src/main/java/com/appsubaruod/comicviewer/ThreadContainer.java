@@ -20,4 +20,11 @@ public class ThreadContainer {
         mSingleThreadService.submit(task);
     }
 
+    public static ExecutorService getSingleWorkerThread() {
+        if (mSingleThreadService == null) {
+            mSingleThreadService = Executors.newSingleThreadExecutor();
+        }
+        return mSingleThreadService;
+    }
+
 }
