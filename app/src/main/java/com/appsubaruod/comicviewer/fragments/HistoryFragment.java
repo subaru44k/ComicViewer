@@ -74,6 +74,8 @@ public class HistoryFragment extends Fragment {
                     @Override
                     public SpannedGridLayoutManager.SpanInfo getSpanInfo(int position) {
 
+                        Log.d(LOG_TAG, "position of span info : " + position);
+
                         // Conditions for 2x2 items
                         if (position % 6 == 0 || position % 6 == 4) {
                             return new SpannedGridLayoutManager.SpanInfo(2, 2);
